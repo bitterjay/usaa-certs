@@ -120,6 +120,9 @@ foreach ($records as $rec) {
         white-space: nowrap;
         z-index: 1;
     }
+    body, .name, .details {
+        font-family: "Poppins", Arial, sans-serif !important;
+    }
     </style></head><body>
     <img src="' . $bg_url . '" class="bg" />
     <div class="name">' . htmlspecialchars($rec['fullName']) . '</div>
