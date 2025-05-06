@@ -81,6 +81,7 @@
         }
         #generate-btn {
             background: #aa1f2e;
+            color:white;
             font-weight: bold;
             font-size: 18px;
             margin-top: 24px;
@@ -326,7 +327,7 @@ canvas.addEventListener('mousedown', function(e) {
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left) * (canvas.width / rect.width);
     const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-    // Check if user clicked near name or details text (within 30px)
+    // Name bounding box
     ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'alphabetic';
@@ -334,16 +335,30 @@ canvas.addEventListener('mousedown', function(e) {
     let nameText = records[currentIdx].fullName;
     let nameWidth = ctx.measureText(nameText).width;
     let nameHeight = ptToPx(nameSize);
-    if (x > CANVAS_WIDTH/2 - nameWidth/2 && x < CANVAS_WIDTH/2 + nameWidth/2 && Math.abs(y - nameYpx) < 30) {
+    let nameBox = {
+        left: CANVAS_WIDTH/2 - nameWidth/2,
+        right: CANVAS_WIDTH/2 + nameWidth/2,
+        top: nameYpx - nameHeight,
+        bottom: nameYpx
+    };
+    if (x >= nameBox.left && x <= nameBox.right && y >= nameBox.top && y <= nameBox.bottom) {
         dragging = 'name';
         dragOffsetY = y - nameYpx;
         return;
     }
+    // Details bounding box
     ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
     let detailsYpx = mmToPx(detailsY);
     let detailsText = records[currentIdx].details.join('      |      ');
     let detailsWidth = ctx.measureText(detailsText).width;
-    if (x > CANVAS_WIDTH/2 - detailsWidth/2 && x < CANVAS_WIDTH/2 + detailsWidth/2 && Math.abs(y - detailsYpx) < 30) {
+    let detailsHeight = ptToPx(detailsSize);
+    let detailsBox = {
+        left: CANVAS_WIDTH/2 - detailsWidth/2,
+        right: CANVAS_WIDTH/2 + detailsWidth/2,
+        top: detailsYpx - detailsHeight,
+        bottom: detailsYpx
+    };
+    if (x >= detailsBox.left && x <= detailsBox.right && y >= detailsBox.top && y <= detailsBox.bottom) {
         dragging = 'details';
         dragOffsetY = y - detailsYpx;
         return;
