@@ -2,6 +2,8 @@
 
 A PHP-based web application for generating USA Archery certificates from Excel/CSV data with a custom background image.
 
+Certification generator for USA Archery
+
 ## Features
 
 - Generates PDF certificates from Excel/CSV data
@@ -27,7 +29,7 @@ A PHP-based web application for generating USA Archery certificates from Excel/C
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/usarchery/usaa-certs.git
+git clone https://github.com/bitterjay/usaa-certs.git
 cd usaa-certs
 ```
 
@@ -98,8 +100,8 @@ If you encounter issues:
 
 ## Support
 
-For support or to report issues, please contact USA Archery IT support or create an issue in the GitHub repository.
+For support or to report issues, please create an issue in the GitHub repository.
 
 ## License
 
-Copyright © USA Archery. All rights reserved. 
+Copyright © USA Archery. All rights reserved.
