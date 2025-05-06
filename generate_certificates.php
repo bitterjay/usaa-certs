@@ -76,65 +76,76 @@ $mpdf = new \Mpdf\Mpdf([
     'default_font' => 'poppins',
 ]);
 
-foreach ($records as $rec) {
-    $mpdf->AddPage();
-    $details = array_filter($rec['details']);
-    $details_html = '';
-    if ($details) {
+try {
+    foreach ($records as $rec) {
+        $mpdf->AddPage();
+        $details = array_filter($rec['details']);
         $details_html = '';
-        foreach ($details as $i => $d) {
-            if ($i > 0) {
-                $details_html .= '<span style="color:#aa1f2e;font-weight:bold;margin:0 6.35mm;">|</span>';
+        if ($details) {
+            $details_html = '';
+            foreach ($details as $i => $d) {
+                if ($i > 0) {
+                    $details_html .= '<span style="color:#aa1f2e;font-weight:bold;margin:0 6.35mm;">|</span>';
+                }
+                $details_html .= '<span style="color:#1c355e;font-weight:bold;">' . htmlspecialchars($d) . '</span>';
             }
-            $details_html .= '<span style="color:#1c355e;font-weight:bold;">' . htmlspecialchars($d) . '</span>';
         }
+        $html = '<html><head><style>
+        @font-face {
+            font-family: "Poppins";
+            src: url("fonts/Poppins-Bold.ttf") format("truetype");
+            font-weight: bold;
+        }
+        body { margin: 0; padding: 0; }
+        .bg { position: absolute; left: 0; top: 0; width: 279.4mm; height: 215.9mm; z-index: 0; }
+        .name {
+            position: absolute;
+            left: 50%;
+            top: ' . $name_y . 'mm;
+            transform: translateX(-50%);
+            color: #aa1f2e;
+            font-size: ' . $name_size . 'pt;
+            font-family: "Poppins", Arial, sans-serif;
+            font-weight: bold;
+            white-space: nowrap;
+            z-index: 1;
+        }
+        .details {
+            position: absolute;
+            left: 50%;
+            top: ' . $details_y . 'mm;
+            transform: translateX(-50%);
+            font-size: ' . $details_size . 'pt;
+            font-family: "Poppins", Arial, sans-serif;
+            font-weight: bold;
+            white-space: nowrap;
+            z-index: 1;
+        }
+        body, .name, .details {
+            font-family: "Poppins", Arial, sans-serif !important;
+        }
+        </style></head><body>
+        <img src="' . $bg_url . '" class="bg" />
+        <div class="name">' . htmlspecialchars($rec['fullName']) . '</div>
+        <div class="details">' . $details_html . '</div>
+    </body></html>';
+        $mpdf->WriteHTML($html);
     }
-    $html = '<html><head><style>
-    @font-face {
-        font-family: "Poppins";
-        src: url("fonts/Poppins-Bold.ttf") format("truetype");
-        font-weight: bold;
-    }
-    body { margin: 0; padding: 0; }
-    .bg { position: absolute; left: 0; top: 0; width: 279.4mm; height: 215.9mm; z-index: 0; }
-    .name {
-        position: absolute;
-        left: 50%;
-        top: ' . $name_y . 'mm;
-        transform: translateX(-50%);
-        color: #aa1f2e;
-        font-size: ' . $name_size . 'pt;
-        font-family: "Poppins", Arial, sans-serif;
-        font-weight: bold;
-        white-space: nowrap;
-        z-index: 1;
-    }
-    .details {
-        position: absolute;
-        left: 50%;
-        top: ' . $details_y . 'mm;
-        transform: translateX(-50%);
-        font-size: ' . $details_size . 'pt;
-        font-family: "Poppins", Arial, sans-serif;
-        font-weight: bold;
-        white-space: nowrap;
-        z-index: 1;
-    }
-    body, .name, .details {
-        font-family: "Poppins", Arial, sans-serif !important;
-    }
-    </style></head><body>
-    <img src="' . $bg_url . '" class="bg" />
-    <div class="name">' . htmlspecialchars($rec['fullName']) . '</div>
-    <div class="details">' . $details_html . '</div>
-</body></html>';
-    $mpdf->WriteHTML($html);
+    $pdf_content = $mpdf->Output('', 'S');
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="certificates.pdf"');
+    header('Content-Length: ' . strlen($pdf_content));
+    echo $pdf_content;
+    exit;
+} catch (\Mpdf\MpdfException $e) {
+    error_log('PDF generation error: ' . $e->getMessage());
+    http_response_code(500);
+    echo 'An error occurred while generating the PDF: ' . htmlspecialchars($e->getMessage());
+    exit;
+} catch (\Throwable $e) {
+    error_log('General error: ' . $e->getMessage());
+    http_response_code(500);
+    echo 'A server error occurred: ' . htmlspecialchars($e->getMessage());
+    exit;
 }
-
-$pdf_content = $mpdf->Output('', 'S');
-header('Content-Type: application/pdf');
-header('Content-Disposition: attachment; filename="certificates.pdf"');
-header('Content-Length: ' . strlen($pdf_content));
-echo $pdf_content;
-exit;
 ?> 
