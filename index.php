@@ -187,6 +187,7 @@ function updatePreview() {
     ctx.font = `bold ${nameSize}px 'Poppins', Arial, sans-serif`;
     ctx.fillStyle = '#aa1f2e';
     ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
     ctx.fillText(records[currentIdx].fullName, canvas.width/2, nameY);
     // Details
     ctx.font = `bold ${detailsSize}px 'Poppins', Arial, sans-serif`;
@@ -246,18 +247,27 @@ nextBtn.addEventListener('click', () => {
     }
 });
 
-function sliderHandler(slider, valSpan, stateVar, cb) {
-    slider.addEventListener('input', e => {
-        window[stateVar] = parseInt(e.target.value, 10);
-        valSpan.textContent = e.target.value;
-        updatePreview();
-        if (cb) cb();
-    });
-}
-sliderHandler(nameYSlider, nameYVal, 'nameY');
-sliderHandler(detailsYSlider, detailsYVal, 'detailsY');
-sliderHandler(nameSizeSlider, nameSizeVal, 'nameSize');
-sliderHandler(detailsSizeSlider, detailsSizeVal, 'detailsSize');
+// Always update preview on slider change
+nameYSlider.addEventListener('input', function() {
+    nameY = parseInt(this.value, 10);
+    nameYVal.textContent = this.value;
+    updatePreview();
+});
+detailsYSlider.addEventListener('input', function() {
+    detailsY = parseInt(this.value, 10);
+    detailsYVal.textContent = this.value;
+    updatePreview();
+});
+nameSizeSlider.addEventListener('input', function() {
+    nameSize = parseInt(this.value, 10);
+    nameSizeVal.textContent = this.value;
+    updatePreview();
+});
+detailsSizeSlider.addEventListener('input', function() {
+    detailsSize = parseInt(this.value, 10);
+    detailsSizeVal.textContent = this.value;
+    updatePreview();
+});
 
 // --- PDF Generation ---
 document.getElementById('cert-form').addEventListener('submit', function(e) {

@@ -38,6 +38,15 @@ $details_y = isset($_POST['details_y']) ? intval($_POST['details_y']) : 500;
 $name_size = isset($_POST['name_size']) ? intval($_POST['name_size']) : 36;
 $details_size = isset($_POST['details_size']) ? intval($_POST['details_size']) : 18;
 
+// Convert pixel positions/sizes to mm for FPDF (canvas: 1100x850px, PDF: 279.4x215.9mm)
+function px_to_mm_x($px) { return $px * (279.4 / 1100); }
+function px_to_mm_y($px) { return $px * (215.9 / 850); }
+
+$name_y_mm = px_to_mm_y($name_y);
+$details_y_mm = px_to_mm_y($details_y);
+$name_size_mm = px_to_mm_y($name_size); // font size is vertical, so use Y scaling
+$details_size_mm = px_to_mm_y($details_size);
+
 // Ensure the background image has a .png extension for FPDF
 $bg_tmp_with_ext = tempnam(sys_get_temp_dir(), 'bg_') . '.png';
 copy($bg_path, $bg_tmp_with_ext);
@@ -70,20 +79,20 @@ foreach ($records as $rec) {
     $pdf->AddPage();
     $w = $pdf->GetPageWidth();
     // Name
-    $pdf->SetFont('Poppins', 'B', $name_size);
+    $pdf->SetFont('Poppins', 'B', $name_size_mm);
     $pdf->SetTextColor(170, 31, 46);
     $name = $rec['fullName'];
     $name_w = $pdf->GetStringWidth($name);
-    $pdf->SetXY(($w-$name_w)/2, $name_y);
+    $pdf->SetXY(($w-$name_w)/2, $name_y_mm);
     $pdf->Cell($name_w, 10, $name, 0, 1, 'C');
     // Details
     $details = array_filter($rec['details']);
     if ($details) {
-        $pdf->SetFont('Poppins', 'B', $details_size);
+        $pdf->SetFont('Poppins', 'B', $details_size_mm);
         $pdf->SetTextColor(28, 53, 94);
         $details_str = implode('      |      ', $details);
         $details_w = $pdf->GetStringWidth($details_str);
-        $pdf->SetXY(($w-$details_w)/2, $details_y);
+        $pdf->SetXY(($w-$details_w)/2, $details_y_mm);
         $pdf->Cell($details_w, 10, $details_str, 0, 1, 'C');
     }
 }
