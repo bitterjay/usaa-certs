@@ -54,10 +54,25 @@ try {
     $nameFontSize = isset($_SESSION['name_font_size']) ? $_SESSION['name_font_size'] : 30;
     $detailsFontSize = isset($_SESSION['details_font_size']) ? $_SESSION['details_font_size'] : 16;
     
+    // Start timer to measure processing time
+    $startTime = microtime(true);
+    
     // Parse the CSV data from the temporary file
     error_log("Parsing CSV file: " . $_SESSION['excel_file']);
     $data = parseInputFile($_SESSION['excel_file']);
-    error_log("Found " . count($data) . " records in CSV file");
+    $recordCount = count($data);
+    error_log("Found " . $recordCount . " records in CSV file");
+    
+    // Calculate estimated processing time (rough estimate)
+    $estimatedTimePerRecord = 0.1; // 100ms per record
+    $estimatedTotalTime = $recordCount * $estimatedTimePerRecord;
+    error_log("Estimated processing time: " . round($estimatedTotalTime, 2) . " seconds");
+    
+    // For very large datasets, increase PHP execution time
+    if ($recordCount > 50) {
+        set_time_limit(max(300, $recordCount * 5)); // 5 seconds per record or minimum 5 minutes
+        error_log("Increased time limit for large dataset");
+    }
     
     // Create PDF
     class CertificatePDF extends FPDF {
@@ -145,8 +160,16 @@ try {
     $pdf->AddFont('Poppins', 'B', 'poppins.php');
 
     // Add a page for each entry
+    $processedCount = 0;
     foreach ($data as $entry) {
         $pdf->AddPage();
+        
+        // Track progress for large datasets
+        $processedCount++;
+        if ($recordCount > 50 && $processedCount % 20 == 0) {
+            $percentComplete = round(($processedCount / $recordCount) * 100);
+            error_log("Certificate generation progress: $percentComplete% ($processedCount of $recordCount)");
+        }
         
         // Get page dimensions
         $pageWidth = $pdf->GetPageWidth();
@@ -227,6 +250,11 @@ try {
     
     error_log("Sending PDF to browser");
     $pdf->Output('D', $filename);
+    
+    // Log the total processing time
+    $endTime = microtime(true);
+    $processingTime = $endTime - $startTime;
+    error_log("Total processing time: " . round($processingTime, 2) . " seconds for $recordCount certificates");
     
     // Note: PHP's temporary files are automatically deleted after the script finishes
     // So we don't need to clean them up manually

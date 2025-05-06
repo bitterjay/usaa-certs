@@ -220,6 +220,43 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
             width: 48%;
             margin-bottom: 15px;
         }
+        
+        /* Loading overlay */
+        #loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .spinner {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #aa1f2e;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-message {
+            color: white;
+            font-size: 18px;
+            text-align: center;
+            max-width: 80%;
+        }
     </style>
 </head>
 <body>
@@ -254,7 +291,7 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
         }
         ?>
 
-        <form class="upload-form" method="POST" enctype="multipart/form-data">
+        <form class="upload-form" method="POST" enctype="multipart/form-data" id="certificate-form">
             <div class="form-group">
                 <label for="excel_file">Upload Excel/CSV File (with columns A-E):</label>
                 <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls,.csv" required>
@@ -337,6 +374,16 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
     </div>
     
     <div class="version">v<?php echo $app_version; ?></div>
+    
+    <!-- Loading overlay -->
+    <div id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-message">
+            <p>Generating certificates...</p>
+            <p>This may take a moment for large datasets.</p>
+            <p>Please don't close this page.</p>
+        </div>
+    </div>
     
     <script>
         // CSV data storage
@@ -657,6 +704,26 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
             
             detailsElement.style.fontSize = size + 'px';
             document.getElementById('details-font-value').innerText = size + 'px';
+        });
+        
+        // Show loading overlay when form is submitted
+        document.getElementById('certificate-form').addEventListener('submit', function() {
+            const fileInput = document.getElementById('excel_file');
+            const imageInput = document.getElementById('background_image');
+            
+            if (fileInput.files.length > 0 && imageInput.files.length > 0) {
+                document.getElementById('loading-overlay').style.display = 'flex';
+                
+                // Estimate processing time based on file size
+                const fileSize = fileInput.files[0].size;
+                const recordCount = csvData.length || 1;
+                
+                // Update message if many records
+                if (recordCount > 20) {
+                    document.querySelector('.loading-message').innerHTML += 
+                        `<p>Processing ${recordCount} certificates. This might take a few minutes.</p>`;
+                }
+            }
         });
     </script>
 </body>
