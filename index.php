@@ -415,15 +415,15 @@ document.getElementById('cert-form').addEventListener('submit', function(e) {
 });
 
 function addDragListeners() {
-    const nameDiv = certPreview.querySelector('.name');
-    const detailsDiv = certPreview.querySelector('.details');
-    if (nameDiv) {
-        nameDiv.addEventListener('mousedown', startDrag('name'));
-        nameDiv.addEventListener('touchstart', startDrag('name'));
+    const nameBox = certPreview.querySelector('.bbox.name-box');
+    const detailsBox = certPreview.querySelector('.bbox.details-box');
+    if (nameBox) {
+        nameBox.addEventListener('mousedown', startDrag('name'));
+        nameBox.addEventListener('touchstart', startDrag('name'));
     }
-    if (detailsDiv) {
-        detailsDiv.addEventListener('mousedown', startDrag('details'));
-        detailsDiv.addEventListener('touchstart', startDrag('details'));
+    if (detailsBox) {
+        detailsBox.addEventListener('mousedown', startDrag('details'));
+        detailsBox.addEventListener('touchstart', startDrag('details'));
     }
 }
 function startDrag(type) {
@@ -431,16 +431,24 @@ function startDrag(type) {
         e.preventDefault();
         dragging = type;
         let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const previewRect = certPreview.getBoundingClientRect();
-        dragOffsetY = clientY - previewRect.top;
+        const wrapper = document.getElementById('certificate-preview-wrapper');
+        const rect = wrapper.getBoundingClientRect();
+        dragOffsetY = clientY - rect.top;
         document.addEventListener('mousemove', onDrag);
-        document.addEventListener('touchmove', onDrag);
+        document.addEventListener('touchmove', onDrag, { passive: false });
         document.addEventListener('mouseup', stopDrag);
         document.addEventListener('touchend', stopDrag);
+        
+        // Add dragging class to show feedback
+        const box = certPreview.querySelector(`.bbox.${type}-box`);
+        if (box) {
+            box.style.cursor = 'grabbing';
+        }
     };
 }
 function onDrag(e) {
     if (!dragging) return;
+    e.preventDefault(); // Prevent scrolling on touch devices
     let clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const wrapper = document.getElementById('certificate-preview-wrapper');
     const rect = wrapper.getBoundingClientRect();
@@ -463,6 +471,14 @@ function onDrag(e) {
     updatePreview();
 }
 function stopDrag() {
+    if (!dragging) return;
+    
+    // Reset cursor
+    const box = certPreview.querySelector(`.bbox.${dragging}-box`);
+    if (box) {
+        box.style.cursor = 'grab';
+    }
+    
     dragging = null;
     document.removeEventListener('mousemove', onDrag);
     document.removeEventListener('touchmove', onDrag);
