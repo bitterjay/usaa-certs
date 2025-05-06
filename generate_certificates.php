@@ -87,12 +87,12 @@ foreach ($records as $rec) {
     if ($details) {
         $pdf->SetFont('Helvetica', 'B', $details_size_pt);
         $pdf->SetTextColor(28, 53, 94);
+        $bullet = '|';
         $space = 6.35; // mm
-        $bullet_r = $details_size_pt * 0.22 * 0.3528; // pt to mm, match canvas
         // Measure total width
         $totalWidth = 0;
         foreach ($details as $i => $d) {
-            if ($i > 0) $totalWidth += $space + $bullet_r * 2 + $space;
+            if ($i > 0) $totalWidth += $space + $pdf->GetStringWidth($bullet) + $space;
             $totalWidth += $pdf->GetStringWidth($d);
         }
         $x = ($w - $totalWidth) / 2;
@@ -100,20 +100,13 @@ foreach ($records as $rec) {
         $pdf->SetXY($x, $y);
         foreach ($details as $i => $d) {
             if ($i > 0) {
-                $x += $space;
-                // Draw bullet as a filled circle
-                $pdf->SetFillColor(170, 31, 46);
-                // Vertically center bullet with text baseline
-                $bullet_cx = $x + $bullet_r;
-                $bullet_cy = $y + $details_size_pt * 0.3528 - $bullet_r * 0.2;
-                $pdf->Ellipse($bullet_cx, $bullet_cy, $bullet_r, $bullet_r, 'F');
-                $x += $bullet_r * 2;
-                $x += $space;
+                $pdf->Cell($space, 10, '', 0, 0, 'L');
+                $pdf->SetTextColor(170, 31, 46); // Red bullet
+                $pdf->Cell($pdf->GetStringWidth($bullet), 10, $bullet, 0, 0, 'L');
+                $pdf->SetTextColor(28, 53, 94); // Restore details text color
+                $pdf->Cell($space, 10, '', 0, 0, 'L');
             }
-            $pdf->SetXY($x, $y);
-            $pdf->SetTextColor(28, 53, 94);
             $pdf->Cell($pdf->GetStringWidth($d), 10, $d, 0, 0, 'L');
-            $x += $pdf->GetStringWidth($d);
         }
         $pdf->Ln(10);
     }
