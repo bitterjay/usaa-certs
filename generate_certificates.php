@@ -67,7 +67,10 @@ $mpdf = new \Mpdf\Mpdf([
     'fontDir' => array_merge($fontDirs, [__DIR__ . '/fonts']),
     'fontdata' => [
         'poppins' => [
+            'R' => 'Poppins-Regular.ttf',
             'B' => 'Poppins-Bold.ttf',
+            'I' => 'Poppins-Italic.ttf',
+            'BI' => 'Poppins-BoldItalic.ttf',
         ],
     ],
     'default_font' => 'poppins',
