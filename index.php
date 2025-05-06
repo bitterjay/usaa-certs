@@ -244,13 +244,14 @@ function parseCSV(text) {
 function drawDetailsBullets(ctx, details, fontPx, yPx) {
     // 0.25 inch = 6.35mm; MM_TO_PX = 10; so 63.5px
     const spacePx = 6.35 * MM_TO_PX;
-    const bullet = '•';
+    // Bullet size: about 0.5em of fontPx (tweak as needed)
+    const bulletRadius = fontPx * 0.22;
     let x = CANVAS_WIDTH/2;
     // Measure total width
     let totalWidth = 0;
     ctx.font = `bold ${fontPx}px 'Poppins', Arial, sans-serif`;
     for (let i = 0; i < details.length; ++i) {
-        if (i > 0) totalWidth += spacePx + ctx.measureText(bullet).width + spacePx;
+        if (i > 0) totalWidth += spacePx + bulletRadius * 2 + spacePx;
         totalWidth += ctx.measureText(details[i]).width;
     }
     // Start at left
@@ -258,11 +259,15 @@ function drawDetailsBullets(ctx, details, fontPx, yPx) {
     for (let i = 0; i < details.length; ++i) {
         if (i > 0) {
             x += spacePx;
+            // Draw bullet as a circle
             ctx.save();
             ctx.fillStyle = '#aa1f2e'; // Red bullet
-            ctx.fillText(bullet, x, yPx);
+            ctx.beginPath();
+            // Vertically center bullet with text baseline 'alphabetic'
+            ctx.arc(x + bulletRadius, yPx - bulletRadius * 0.2, bulletRadius, 0, 2 * Math.PI);
+            ctx.fill();
             ctx.restore();
-            x += ctx.measureText(bullet).width;
+            x += bulletRadius * 2;
             x += spacePx;
         }
         ctx.save();
