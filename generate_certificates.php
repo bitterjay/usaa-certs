@@ -80,7 +80,9 @@ foreach ($records as $rec) {
     $pdf->SetTextColor(170, 31, 46);
     $name = $rec['fullName'];
     $name_w = $pdf->GetStringWidth($name);
-    $pdf->SetXY(($w-$name_w)/2, $name_y_mm);
+    // FPDF draws from the top, so subtract font size in mm to anchor at bottom
+    $name_top = $name_y_mm - ($name_size_pt * 0.3528); // 1pt = 0.3528mm
+    $pdf->SetXY(($w-$name_w)/2, $name_top);
     $pdf->Cell($name_w, 10, $name, 0, 1, 'C');
     // Details
     $details = array_filter($rec['details']);
@@ -89,7 +91,8 @@ foreach ($records as $rec) {
         $pdf->SetTextColor(28, 53, 94);
         $details_str = implode('      |      ', $details);
         $details_w = $pdf->GetStringWidth($details_str);
-        $pdf->SetXY(($w-$details_w)/2, $details_y_mm);
+        $details_top = $details_y_mm - ($details_size_pt * 0.3528);
+        $pdf->SetXY(($w-$details_w)/2, $details_top);
         $pdf->Cell($details_w, 10, $details_str, 0, 1, 'C');
     }
 }

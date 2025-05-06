@@ -148,6 +148,8 @@ let records = [];
 let currentIdx = 0;
 let bgImg = null;
 let nameY = 400, detailsY = 500, nameSize = 36, detailsSize = 18;
+let dragging = null; // 'name' or 'details'
+let dragOffsetY = 0;
 
 const csvInput = document.getElementById('csv-input');
 const bgInput = document.getElementById('bg-input');
@@ -237,11 +239,13 @@ function updatePreview() {
     ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
     ctx.fillStyle = '#aa1f2e';
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
+    ctx.textBaseline = 'alphabetic'; // anchor at bottom
     ctx.fillText(records[currentIdx].fullName, CANVAS_WIDTH/2, mmToPx(nameY));
     // Details
     ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
     ctx.fillStyle = '#1c355e';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic'; // anchor at bottom
     let detailsText = records[currentIdx].details.join('      |      ');
     ctx.fillText(detailsText, CANVAS_WIDTH/2, mmToPx(detailsY));
     // Slide indicator
@@ -316,6 +320,56 @@ detailsSizeSlider.addEventListener('input', function() {
     detailsSize = parseInt(this.value, 10);
     detailsSizeVal.textContent = this.value;
     updatePreview();
+});
+
+canvas.addEventListener('mousedown', function(e) {
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    // Check if user clicked near name or details text (within 30px)
+    ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'alphabetic';
+    let nameYpx = mmToPx(nameY);
+    let nameText = records[currentIdx].fullName;
+    let nameWidth = ctx.measureText(nameText).width;
+    let nameHeight = ptToPx(nameSize);
+    if (x > CANVAS_WIDTH/2 - nameWidth/2 && x < CANVAS_WIDTH/2 + nameWidth/2 && Math.abs(y - nameYpx) < 30) {
+        dragging = 'name';
+        dragOffsetY = y - nameYpx;
+        return;
+    }
+    ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
+    let detailsYpx = mmToPx(detailsY);
+    let detailsText = records[currentIdx].details.join('      |      ');
+    let detailsWidth = ctx.measureText(detailsText).width;
+    if (x > CANVAS_WIDTH/2 - detailsWidth/2 && x < CANVAS_WIDTH/2 + detailsWidth/2 && Math.abs(y - detailsYpx) < 30) {
+        dragging = 'details';
+        dragOffsetY = y - detailsYpx;
+        return;
+    }
+});
+
+document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+    let newYmm = (y - dragOffsetY) / MM_TO_PX;
+    newYmm = Math.max(0, Math.min(PDF_HEIGHT_MM, newYmm));
+    if (dragging === 'name') {
+        nameY = newYmm;
+        nameYSlider.value = nameY;
+        nameYVal.textContent = nameY.toFixed(1);
+    } else if (dragging === 'details') {
+        detailsY = newYmm;
+        detailsYSlider.value = detailsY;
+        detailsYVal.textContent = detailsY.toFixed(1);
+    }
+    updatePreview();
+});
+
+document.addEventListener('mouseup', function() {
+    dragging = null;
 });
 
 // --- PDF Generation ---
