@@ -203,22 +203,19 @@ function renderCertificateHTML(record, options = {}) {
             details_html += '<span style="color:' + (showGreenBoxes ? 'rgba(0,0,0,0)' : '#1c355e') + ';font-weight:bold;">' + escapeHtml(d) + '</span>';
         });
     }
-    // Bounding box logic
-    let nameBox = '';
-    let detailsBox = '';
-    if (showBbox && !showGreenBoxes) {
-        nameBox = `<div class="bbox" data-type="name" style="position:absolute;left:50%;top:${nameY}mm;transform:translateX(-50%);z-index:2;pointer-events:none;border:2px dashed ${bboxColor};background:${bboxColor}10;width:max-content;max-width:100%;padding:2px 8px;opacity:0.5;"></div>`;
-        detailsBox = `<div class="bbox" data-type="details" style="position:absolute;left:50%;top:${detailsY}mm;transform:translateX(-50%);z-index:2;pointer-events:none;border:2px dashed ${bboxColor};background:${bboxColor}10;width:max-content;max-width:100%;padding:2px 8px;opacity:0.5;"></div>`;
-    }
-    // Main HTML
+
+    // Main HTML with text inside bounding boxes
     return `
         <img src="${bgImg.src}" class="bg" style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;object-fit:cover;opacity:${opacity};" />
-        ${nameBox}
-        ${detailsBox}
-        <div class="name" data-type="name" style="position:absolute;left:50%;top:${nameY}mm;transform:translateX(-50%);color:${showGreenBoxes ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${nameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;z-index:3;text-align:center;width:100%;cursor:${draggable?'grab':'default'};opacity:${opacity};background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : opacity};">${escapeHtml(record.fullName)}</div>
-        <div class="details" data-type="details" style="position:absolute;left:50%;top:${detailsY}mm;transform:translateX(-50%);font-size:${detailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;z-index:3;text-align:center;width:100%;cursor:${draggable?'grab':'default'};opacity:${opacity};background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : opacity};">${details_html}</div>
+        <div class="bbox name-box" data-type="name" style="position:absolute;left:50%;top:${nameY}mm;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
+            <div class="name" style="color:${showGreenBoxes ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${nameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${escapeHtml(record.fullName)}</div>
+        </div>
+        <div class="bbox details-box" data-type="details" style="position:absolute;left:50%;top:${detailsY}mm;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
+            <div class="details" style="font-size:${detailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${details_html}</div>
+        </div>
         <style>
         .pipe { color:#aa1f2e;font-weight:bold;padding:0 10mm;font-size:inherit; }
+        .bbox { width:max-content;max-width:100%; }
         </style>
     `;
 }
