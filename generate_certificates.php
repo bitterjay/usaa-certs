@@ -5,7 +5,7 @@ ini_set('log_errors', 1);
 ini_set('error_log', 'pdf_generation_errors.log');
 error_reporting(E_ALL);
 
-require_once('fpdf.php');
+require_once __DIR__ . '/vendor/autoload.php';
 
 // Helper: Parse CSV file
 function parse_csv($file) {
@@ -38,16 +38,6 @@ $details_y = isset($_POST['details_y']) ? floatval($_POST['details_y']) : 130.1;
 $name_size = isset($_POST['name_size']) ? intval($_POST['name_size']) : 36;
 $details_size = isset($_POST['details_size']) ? intval($_POST['details_size']) : 18;
 
-// No conversion needed: use Y positions (mm) and font sizes (pt) directly
-$name_y_mm = $name_y;
-$details_y_mm = $details_y;
-$name_size_pt = $name_size;
-$details_size_pt = $details_size;
-
-// Ensure the background image has a .png extension for FPDF
-$bg_tmp_with_ext = tempnam(sys_get_temp_dir(), 'bg_') . '.png';
-copy($bg_path, $bg_tmp_with_ext);
-
 $records = parse_csv($csv_path);
 error_log('Parsed CSV records: ' . print_r($records, true));
 if (!$records) {
@@ -56,67 +46,89 @@ if (!$records) {
     exit;
 }
 
-// PDF setup
-class CertificatePDF extends FPDF {
-    public $bg;
-    function setBg($bg) { $this->bg = $bg; }
-    function Header() {
-        if ($this->bg) {
-            $this->Image($this->bg, 0, 0, $this->GetPageWidth(), $this->GetPageHeight());
-        }
-    }
-}
-$pdf = new CertificatePDF('L', 'mm', array(279.4, 215.9)); // Letter landscape
-$pdf->SetAutoPageBreak(false);
-$pdf->SetMargins(0, 0, 0);
-$pdf->setBg($bg_tmp_with_ext);
+// Prepare background image as base64
+$bg_data = base64_encode(file_get_contents($bg_path));
+$bg_mime = mime_content_type($bg_path);
+$bg_url = "data:$bg_mime;base64,$bg_data";
+
+// mPDF setup
+$defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
+$fontDirs = $defaultConfig['fontDir'];
+
+$mpdf = new \Mpdf\Mpdf([
+    'format' => [279.4, 215.9], // Letter landscape in mm
+    'orientation' => 'L',
+    'margin_left' => 0,
+    'margin_right' => 0,
+    'margin_top' => 0,
+    'margin_bottom' => 0,
+    'margin_header' => 0,
+    'margin_footer' => 0,
+    'fontDir' => array_merge($fontDirs, [__DIR__ . '/fonts']),
+    'fontdata' => [
+        'poppins' => [
+            'B' => 'Poppins-Bold.ttf',
+        ],
+    ],
+    'default_font' => 'poppins',
+]);
 
 foreach ($records as $rec) {
-    $pdf->AddPage();
-    $w = $pdf->GetPageWidth();
-    // Name
-    $pdf->SetFont('Helvetica', 'B', $name_size_pt);
-    $pdf->SetTextColor(170, 31, 46);
-    $name = $rec['fullName'];
-    $name_w = $pdf->GetStringWidth($name);
-    $name_top = $name_y_mm - ($name_size_pt * 0.3528);
-    $pdf->SetXY(($w-$name_w)/2, $name_top);
-    $pdf->Cell($name_w, 10, $name, 0, 1, 'C');
-    // Details
+    $mpdf->AddPage();
     $details = array_filter($rec['details']);
+    $details_html = '';
     if ($details) {
-        $pdf->SetFont('Helvetica', 'B', $details_size_pt);
-        $pdf->SetTextColor(28, 53, 94);
-        $bullet = '|';
-        $space = 6.35; // mm
-        // Measure total width
-        $totalWidth = 0;
-        foreach ($details as $i => $d) {
-            if ($i > 0) $totalWidth += $space + $pdf->GetStringWidth($bullet) + $space;
-            $totalWidth += $pdf->GetStringWidth($d);
-        }
-        $x = ($w - $totalWidth) / 2;
-        $y = $details_y_mm - ($details_size_pt * 0.3528);
-        $pdf->SetXY($x, $y);
+        $details_html = '';
         foreach ($details as $i => $d) {
             if ($i > 0) {
-                $pdf->Cell($space, 10, '', 0, 0, 'L');
-                $pdf->SetTextColor(170, 31, 46); // Red bullet
-                $pdf->Cell($pdf->GetStringWidth($bullet), 10, $bullet, 0, 0, 'L');
-                $pdf->SetTextColor(28, 53, 94); // Restore details text color
-                $pdf->Cell($space, 10, '', 0, 0, 'L');
+                $details_html .= '<span style="color:#aa1f2e;font-weight:bold;margin:0 6.35mm;">|</span>';
             }
-            $pdf->Cell($pdf->GetStringWidth($d), 10, $d, 0, 0, 'L');
+            $details_html .= '<span style="color:#1c355e;font-weight:bold;">' . htmlspecialchars($d) . '</span>';
         }
-        $pdf->Ln(10);
     }
+    $html = '<html><head><style>
+    @font-face {
+        font-family: "Poppins";
+        src: url("fonts/Poppins-Bold.ttf") format("truetype");
+        font-weight: bold;
+    }
+    body { margin: 0; padding: 0; }
+    .bg { position: absolute; left: 0; top: 0; width: 279.4mm; height: 215.9mm; z-index: 0; }
+    .name {
+        position: absolute;
+        left: 50%;
+        top: ' . $name_y . 'mm;
+        transform: translateX(-50%);
+        color: #aa1f2e;
+        font-size: ' . $name_size . 'pt;
+        font-family: "Poppins", Arial, sans-serif;
+        font-weight: bold;
+        white-space: nowrap;
+        z-index: 1;
+    }
+    .details {
+        position: absolute;
+        left: 50%;
+        top: ' . $details_y . 'mm;
+        transform: translateX(-50%);
+        font-size: ' . $details_size . 'pt;
+        font-family: "Poppins", Arial, sans-serif;
+        font-weight: bold;
+        white-space: nowrap;
+        z-index: 1;
+    }
+    </style></head><body>
+    <img src="' . $bg_url . '" class="bg" />
+    <div class="name">' . htmlspecialchars($rec['fullName']) . '</div>
+    <div class="details">' . $details_html . '</div>
+</body></html>';
+    $mpdf->WriteHTML($html);
 }
 
-$pdf_content = $pdf->Output('S');
+$pdf_content = $mpdf->Output('', 'S');
 header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="certificates.pdf"');
 header('Content-Length: ' . strlen($pdf_content));
 echo $pdf_content;
-@unlink($bg_tmp_with_ext);
 exit;
 ?> 
