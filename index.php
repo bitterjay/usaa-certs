@@ -212,13 +212,25 @@ function getScaledFontSize(originalSize) {
     return originalSize * scale;
 }
 
+// Function to get preview scale factor
+function getPreviewScale() {
+    const previewWrapper = document.getElementById('certificate-preview-wrapper');
+    if (!previewWrapper) return 1;
+    const wrapperHeight = previewWrapper.offsetHeight;
+    // A4 height in mm is 297
+    return wrapperHeight / 215.9; // Scale based on height since we're scaling Y positions
+}
+
 function renderCertificateHTML(record, options = {}) {
     if (!bgImg) return '';
     const { opacity = 1, showBbox = showBoundingBoxes, bboxColor = boundingBoxColor, draggable = false, idx = null, showGreenBoxes = false } = options;
     
-    // Calculate scaled font sizes for preview
+    // Calculate scaled sizes for preview
     const scaledNameSize = getScaledFontSize(nameSize);
     const scaledDetailsSize = getScaledFontSize(detailsSize);
+    const scale = getPreviewScale();
+    const scaledNameY = nameY * scale;
+    const scaledDetailsY = detailsY * scale;
     
     // Build details HTML with pipes
     let details_html = '';
@@ -232,10 +244,10 @@ function renderCertificateHTML(record, options = {}) {
     // Main HTML with text inside bounding boxes
     return `
         <img src="${bgImg.src}" class="bg" style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;object-fit:cover;opacity:${opacity};" />
-        <div class="bbox name-box" data-type="name" style="position:absolute;left:50%;top:${nameY}mm;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
+        <div class="bbox name-box" data-type="name" style="position:absolute;left:50%;top:${scaledNameY}px;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
             <div class="name" style="color:${showGreenBoxes ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${scaledNameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${escapeHtml(record.fullName)}</div>
         </div>
-        <div class="bbox details-box" data-type="details" style="position:absolute;left:50%;top:${detailsY}mm;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
+        <div class="bbox details-box" data-type="details" style="position:absolute;left:50%;top:${scaledDetailsY}px;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
             <div class="details" style="font-size:${scaledDetailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${details_html}</div>
         </div>
         <style>
@@ -430,9 +442,12 @@ function onDrag(e) {
     const wrapper = document.getElementById('certificate-preview-wrapper');
     const rect = wrapper.getBoundingClientRect();
     let yPx = clientY - rect.top;
-    // Convert px to mm
-    let mm = yPx / rect.height * 215.9;
+    
+    // Convert px to mm, accounting for scale
+    const scale = getPreviewScale();
+    let mm = (yPx / scale);
     mm = Math.max(0, Math.min(215.9, mm));
+    
     if (dragging === 'name') {
         nameY = mm;
         nameYSlider.value = nameY;
