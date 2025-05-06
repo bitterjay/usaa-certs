@@ -148,7 +148,7 @@
 let records = [];
 let currentIdx = 0;
 let bgImg = null;
-let nameY = 400, detailsY = 500, nameSize = 36, detailsSize = 18;
+let nameY = 111.8, detailsY = 130.1, nameSize = 36, detailsSize = 18;
 let dragging = null; // 'name' or 'details'
 let dragOffsetY = 0;
 
@@ -197,8 +197,8 @@ detailsSizeSlider.max = 40;
 detailsSizeSlider.step = 1;
 
 // Default values
-nameY = 80.0;
-detailsY = 120.0;
+nameY = 111.8;
+detailsY = 130.1;
 nameSize = 36;
 detailsSize = 18;
 nameYSlider.value = nameY;

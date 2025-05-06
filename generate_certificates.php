@@ -33,8 +33,8 @@ if (!isset($_FILES['background'], $_FILES['csv'])) {
 }
 $bg_path = $_FILES['background']['tmp_name'];
 $csv_path = $_FILES['csv']['tmp_name'];
-$name_y = isset($_POST['name_y']) ? intval($_POST['name_y']) : 400;
-$details_y = isset($_POST['details_y']) ? intval($_POST['details_y']) : 500;
+$name_y = isset($_POST['name_y']) ? floatval($_POST['name_y']) : 111.8;
+$details_y = isset($_POST['details_y']) ? floatval($_POST['details_y']) : 130.1;
 $name_size = isset($_POST['name_size']) ? intval($_POST['name_size']) : 36;
 $details_size = isset($_POST['details_size']) ? intval($_POST['details_size']) : 18;
 
