@@ -282,7 +282,7 @@ function drawBoundingBox(x, y, w, h, color) {
     ctx.globalAlpha = 1.0;
     // Draw border
     ctx.strokeStyle = color;
-    ctx.lineWidth = 1;
+    ctx.lineWidth = 5;
     ctx.setLineDash([2,2]);
     ctx.strokeRect(x, y, w, h);
     ctx.setLineDash([]);
