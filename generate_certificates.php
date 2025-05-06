@@ -340,16 +340,37 @@ try {
                 padding: 15px 30px;
                 border: none;
                 border-radius: 4px;
-                font-size: 18px;
+                font-size: 20px;
+                font-weight: bold;
                 cursor: pointer;
                 margin: 20px 0;
                 display: inline-block;
                 text-decoration: none;
                 transition: background-color 0.3s;
+                animation: pulse 2s infinite;
+            }
+            
+            @keyframes pulse {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(170, 31, 46, 0.7);
+                }
+                
+                70% {
+                    transform: scale(1.05);
+                    box-shadow: 0 0 0 10px rgba(170, 31, 46, 0);
+                }
+                
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(170, 31, 46, 0);
+                }
             }
             
             .button:hover {
                 background-color: #8e1926;
+                animation: none;
+                transform: scale(1.05);
             }
             
             .certificate-info {
@@ -393,9 +414,11 @@ try {
                 <p><strong>Processing Time:</strong> <?php echo round($processingTime, 2); ?> seconds</p>
             </div>
             
-            <a href="download_prompt.php" class="button">Continue to Download</a>
-            
-            <p>Click the button above to proceed to the download page.</p>
+            <div style="margin: 30px 0;">
+                <p><strong>Important:</strong> Click the button below to proceed to the download page.</p>
+                <a href="download_prompt.php" class="button">DOWNLOAD YOUR CERTIFICATES</a>
+                <p style="font-size: 14px; color: #666; margin-top: 5px;">You must click this button to access your generated certificates.</p>
+            </div>
             
             <a href="index.php" class="home-link">Cancel and Return to Generator</a>
         </div>

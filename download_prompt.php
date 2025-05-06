@@ -1,9 +1,26 @@
 <?php
 session_start();
 
+// Enable error logging
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', 'pdf_generation_errors.log');
+error_reporting(E_ALL);
+
+// Debug information
+error_log("download_prompt.php accessed - Session data: " . json_encode($_SESSION));
+
 // Check if the download info is available in the session
 if (!isset($_SESSION['pdf_file']) || !file_exists($_SESSION['pdf_file'])) {
-    header('Location: index.php');
+    error_log("PDF file not found: " . (isset($_SESSION['pdf_file']) ? $_SESSION['pdf_file'] : 'Session variable not set'));
+    
+    // Show error with debug information in development
+    echo '<div style="color: red; padding: 20px; background: #fff; border: 2px solid #aa1f2e; margin: 20px;">';
+    echo '<h2>Error: Unable to find the generated certificates</h2>';
+    echo '<p>The certificate file was not found or session information has been lost.</p>';
+    echo '<p>Please try generating the certificates again.</p>';
+    echo '<a href="index.php" style="display: inline-block; margin-top: 20px; padding: 10px 15px; background-color: #1c355e; color: white; text-decoration: none; border-radius: 4px;">Return to Generator</a>';
+    echo '</div>';
     exit;
 }
 
@@ -11,6 +28,9 @@ if (!isset($_SESSION['pdf_file']) || !file_exists($_SESSION['pdf_file'])) {
 $file_path = $_SESSION['pdf_file'];
 $file_name = isset($_SESSION['pdf_filename']) ? $_SESSION['pdf_filename'] : 'USAA_Certificates.pdf';
 $record_count = isset($_SESSION['record_count']) ? $_SESSION['record_count'] : 0;
+
+// Debug file information
+error_log("File info - Path: $file_path, Name: $file_name, Records: $record_count, Exists: " . (file_exists($file_path) ? 'Yes' : 'No') . ", Size: " . (file_exists($file_path) ? filesize($file_path) : 'N/A'));
 ?>
 
 <!DOCTYPE html>
@@ -131,9 +151,10 @@ $record_count = isset($_SESSION['record_count']) ? $_SESSION['record_count'] : 0
         <div class="certificate-info">
             <p><strong>File:</strong> <?php echo htmlspecialchars($file_name); ?></p>
             <p><strong>Certificates Generated:</strong> <?php echo $record_count; ?></p>
+            <p><strong>File Size:</strong> <?php echo number_format(filesize($file_path) / 1024, 2); ?> KB</p>
         </div>
         
-        <a href="download_file.php" class="download-button">Download Certificates</a>
+        <a href="download_file.php" class="download-button" onclick="confirmDownload()">Download Certificates</a>
         
         <p>Click the button above to download your certificates as a PDF file.</p>
         
@@ -141,5 +162,11 @@ $record_count = isset($_SESSION['record_count']) ? $_SESSION['record_count'] : 0
     </div>
     
     <div class="version">v<?php echo isset($app_version) ? $app_version : '1.4.3'; ?></div>
+
+    <script>
+        function confirmDownload() {
+            console.log("Download initiated");
+        }
+    </script>
 </body>
 </html> 
