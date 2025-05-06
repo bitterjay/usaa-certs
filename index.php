@@ -118,6 +118,11 @@
                 <span id="slide-indicator">1/1</span>
                 <button type="button" id="next-btn">Next &gt;</button>
             </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:12px;justify-content:center;">
+                <input type="checkbox" id="show-bbox" checked>
+                <label for="show-bbox" style="margin:0;">Show bounding boxes</label>
+                <input type="color" id="bbox-color" value="#00c853" style="width:32px;height:32px;border:none;cursor:pointer;">
+            </div>
             <div class="slider-group">
                 <label for="name-y">Name Y Position</label>
                 <input type="range" id="name-y" min="0" max="850" value="400">
@@ -151,6 +156,8 @@ let bgImg = null;
 let nameY = 111.8, detailsY = 130.1, nameSize = 36, detailsSize = 18;
 let dragging = null; // 'name' or 'details'
 let dragOffsetY = 0;
+let showBoundingBoxes = true;
+let boundingBoxColor = '#00c853';
 
 const csvInput = document.getElementById('csv-input');
 const bgInput = document.getElementById('bg-input');
@@ -169,6 +176,8 @@ const detailsYVal = document.getElementById('details-y-val');
 const nameSizeVal = document.getElementById('name-size-val');
 const detailsSizeVal = document.getElementById('details-size-val');
 const generateBtn = document.getElementById('generate-btn');
+const showBboxCheckbox = document.getElementById('show-bbox');
+const bboxColorInput = document.getElementById('bbox-color');
 
 // PDF dimensions: 279.4mm x 215.9mm (landscape)
 const PDF_WIDTH_MM = 279.4;
@@ -264,12 +273,21 @@ function drawDetailsBullets(ctx, details, fontPx, yPx) {
     }
 }
 
+function drawBoundingBox(x, y, w, h, color) {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    ctx.setLineDash([2,2]);
+    ctx.strokeRect(x, y, w, h);
+    ctx.setLineDash([]);
+    ctx.restore();
+}
+
 function updatePreview() {
     if (!bgImg || !records.length) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
     if (currentIdx === 0) {
-        // Overlay all records at 1% opacity
         ctx.globalAlpha = 0.01;
         for (let i = 0; i < records.length; ++i) {
             // Name
@@ -283,6 +301,22 @@ function updatePreview() {
             ctx.textAlign = 'left';
             ctx.textBaseline = 'alphabetic';
             drawDetailsBullets(ctx, records[i].details, ptToPx(detailsSize), mmToPx(detailsY));
+            if (showBoundingBoxes) {
+                // Name bbox
+                ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
+                let nameYpx = mmToPx(nameY);
+                let nameText = records[i].fullName;
+                let nameWidth = ctx.measureText(nameText).width;
+                let nameHeight = ptToPx(nameSize);
+                drawBoundingBox(CANVAS_WIDTH/2 - nameWidth/2, nameYpx - nameHeight, nameWidth, nameHeight, boundingBoxColor);
+                // Details bbox
+                ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
+                let detailsYpx = mmToPx(detailsY);
+                let detailsText = records[i].details.join('      |      ');
+                let detailsWidth = ctx.measureText(detailsText).width;
+                let detailsHeight = ptToPx(detailsSize);
+                drawBoundingBox(CANVAS_WIDTH/2 - detailsWidth/2, detailsYpx - detailsHeight, detailsWidth, detailsHeight, boundingBoxColor);
+            }
         }
         ctx.globalAlpha = 1.0;
     } else {
@@ -297,6 +331,22 @@ function updatePreview() {
         ctx.textAlign = 'left';
         ctx.textBaseline = 'alphabetic';
         drawDetailsBullets(ctx, records[currentIdx-1].details, ptToPx(detailsSize), mmToPx(detailsY));
+        if (showBoundingBoxes) {
+            // Name bbox
+            ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
+            let nameYpx = mmToPx(nameY);
+            let nameText = records[currentIdx-1].fullName;
+            let nameWidth = ctx.measureText(nameText).width;
+            let nameHeight = ptToPx(nameSize);
+            drawBoundingBox(CANVAS_WIDTH/2 - nameWidth/2, nameYpx - nameHeight, nameWidth, nameHeight, boundingBoxColor);
+            // Details bbox
+            ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
+            let detailsYpx = mmToPx(detailsY);
+            let detailsText = records[currentIdx-1].details.join('      |      ');
+            let detailsWidth = ctx.measureText(detailsText).width;
+            let detailsHeight = ptToPx(detailsSize);
+            drawBoundingBox(CANVAS_WIDTH/2 - detailsWidth/2, detailsYpx - detailsHeight, detailsWidth, detailsHeight, boundingBoxColor);
+        }
     }
     // Slide indicator
     slideIndicator.textContent = `${currentIdx}/${records.length}`;
@@ -434,6 +484,16 @@ document.addEventListener('mousemove', function(e) {
 
 document.addEventListener('mouseup', function() {
     dragging = null;
+});
+
+showBboxCheckbox.addEventListener('change', function() {
+    showBoundingBoxes = this.checked;
+    bboxColorInput.disabled = !this.checked;
+    updatePreview();
+});
+bboxColorInput.addEventListener('input', function() {
+    boundingBoxColor = this.value;
+    updatePreview();
 });
 
 // --- PDF Generation ---
