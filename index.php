@@ -167,6 +167,56 @@ const nameSizeVal = document.getElementById('name-size-val');
 const detailsSizeVal = document.getElementById('details-size-val');
 const generateBtn = document.getElementById('generate-btn');
 
+// PDF dimensions: 279.4mm x 215.9mm (landscape)
+const PDF_WIDTH_MM = 279.4;
+const PDF_HEIGHT_MM = 215.9;
+const MM_TO_PX = 10; // 1mm = 10px for high-res preview
+const CANVAS_WIDTH = Math.round(PDF_WIDTH_MM * MM_TO_PX); // 2794px
+const CANVAS_HEIGHT = Math.round(PDF_HEIGHT_MM * MM_TO_PX); // 2159px
+
+canvas.width = CANVAS_WIDTH;
+canvas.height = CANVAS_HEIGHT;
+canvas.style.width = '100%';
+canvas.style.height = 'auto';
+
+// Sliders in mm and pt
+nameYSlider.min = 0;
+nameYSlider.max = PDF_HEIGHT_MM;
+nameYSlider.step = 0.1;
+detailsYSlider.min = 0;
+detailsYSlider.max = PDF_HEIGHT_MM;
+detailsYSlider.step = 0.1;
+nameSizeSlider.min = 10;
+nameSizeSlider.max = 80;
+nameSizeSlider.step = 1;
+detailsSizeSlider.min = 10;
+detailsSizeSlider.max = 40;
+detailsSizeSlider.step = 1;
+
+// Default values
+nameY = 80.0;
+detailsY = 120.0;
+nameSize = 36;
+detailsSize = 18;
+nameYSlider.value = nameY;
+detailsYSlider.value = detailsY;
+nameSizeSlider.value = nameSize;
+detailsSizeSlider.value = detailsSize;
+nameYVal.textContent = nameY;
+detailsYVal.textContent = detailsY;
+nameSizeVal.textContent = nameSize;
+detailsSizeVal.textContent = detailsSize;
+
+function ptToPx(pt) {
+    // 1pt = 1/72 inch; 1 inch = 25.4mm; 1mm = 10px
+    // px = pt * (25.4/72) * MM_TO_PX
+    return pt * (25.4/72) * MM_TO_PX;
+}
+
+function mmToPx(mm) {
+    return mm * MM_TO_PX;
+}
+
 function parseCSV(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     lines.shift(); // Remove header
@@ -184,16 +234,16 @@ function updatePreview() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
     // Name
-    ctx.font = `bold ${nameSize}px 'Poppins', Arial, sans-serif`;
+    ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
     ctx.fillStyle = '#aa1f2e';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText(records[currentIdx].fullName, canvas.width/2, nameY);
+    ctx.fillText(records[currentIdx].fullName, CANVAS_WIDTH/2, mmToPx(nameY));
     // Details
-    ctx.font = `bold ${detailsSize}px 'Poppins', Arial, sans-serif`;
+    ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
     ctx.fillStyle = '#1c355e';
     let detailsText = records[currentIdx].details.join('      |      ');
-    ctx.fillText(detailsText, canvas.width/2, detailsY);
+    ctx.fillText(detailsText, CANVAS_WIDTH/2, mmToPx(detailsY));
     // Slide indicator
     slideIndicator.textContent = `${currentIdx+1}/${records.length}`;
     prevBtn.disabled = currentIdx === 0;
@@ -247,14 +297,13 @@ nextBtn.addEventListener('click', () => {
     }
 });
 
-// Always update preview on slider change
 nameYSlider.addEventListener('input', function() {
-    nameY = parseInt(this.value, 10);
+    nameY = parseFloat(this.value);
     nameYVal.textContent = this.value;
     updatePreview();
 });
 detailsYSlider.addEventListener('input', function() {
-    detailsY = parseInt(this.value, 10);
+    detailsY = parseFloat(this.value);
     detailsYVal.textContent = this.value;
     updatePreview();
 });
