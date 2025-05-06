@@ -111,6 +111,7 @@ session_start();
                 <label for="excel_file">Upload Excel/CSV File (with columns A-E):</label>
                 <input type="file" name="excel_file" id="excel_file" accept=".xlsx,.xls,.csv" required>
                 <small>Format: Column A (First Name), B (Last Name), C-E (Additional Details)</small>
+                <small>Supported formats: Excel (.xlsx, .xls) and CSV files</small>
             </div>
 
             <div class="form-group">
