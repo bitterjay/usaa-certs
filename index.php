@@ -127,18 +127,18 @@
             </div>
             <div class="slider-group">
                 <label for="name-y">Name Y Position</label>
-                <input type="range" id="name-y" min="0" max="215.9" step="0.1" value="111.8">
-                <span id="name-y-val">111.8</span>
+                <input type="range" id="name-y" min="0" max="215.9" step="0.1" value="78.9">
+                <span id="name-y-val">78.9</span>
             </div>
             <div class="slider-group">
                 <label for="details-y">Details Y Position</label>
-                <input type="range" id="details-y" min="0" max="215.9" step="0.1" value="130.1">
-                <span id="details-y-val">130.1</span>
+                <input type="range" id="details-y" min="0" max="215.9" step="0.1" value="94.4">
+                <span id="details-y-val">94.4</span>
             </div>
             <div class="slider-group">
                 <label for="name-size">Name Font Size</label>
-                <input type="range" id="name-size" min="10" max="80" step="1" value="36">
-                <span id="name-size-val">36</span>
+                <input type="range" id="name-size" min="10" max="80" step="1" value="27">
+                <span id="name-size-val">27</span>
             </div>
             <div class="slider-group">
                 <label for="details-size">Details Font Size</label>
@@ -155,7 +155,7 @@
 let records = [];
 let currentIdx = 0;
 let bgImg = null;
-let nameY = 111.8, detailsY = 130.1, nameSize = 36, detailsSize = 18;
+let nameY = 78.9, detailsY = 94.4, nameSize = 27, detailsSize = 18;
 let showBoundingBoxes = true;
 let boundingBoxColor = '#00c853';
 let dragging = null; // 'name' or 'details'
@@ -180,6 +180,16 @@ const generateBtn = document.getElementById('generate-btn');
 const showBboxCheckbox = document.getElementById('show-bbox');
 const bboxColorInput = document.getElementById('bbox-color');
 
+// Initialize slider values
+nameYSlider.value = nameY;
+detailsYSlider.value = detailsY;
+nameSizeSlider.value = nameSize;
+detailsSizeSlider.value = detailsSize;
+nameYVal.textContent = nameY;
+detailsYVal.textContent = detailsY;
+nameSizeVal.textContent = nameSize;
+detailsSizeVal.textContent = detailsSize;
+
 function parseCSV(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     lines.shift(); // Remove header
@@ -192,9 +202,24 @@ function parseCSV(text) {
     }).filter(r => r.fullName);
 }
 
+// Function to calculate scaled font size based on preview width
+function getScaledFontSize(originalSize) {
+    const previewWrapper = document.getElementById('certificate-preview-wrapper');
+    if (!previewWrapper) return originalSize;
+    const wrapperWidth = previewWrapper.offsetWidth;
+    // A4 width in mm is 210, scale font size proportionally
+    const scale = wrapperWidth / (210 * 3.7795275591); // convert mm to px (1mm ≈ 3.7795275591px)
+    return originalSize * scale;
+}
+
 function renderCertificateHTML(record, options = {}) {
     if (!bgImg) return '';
     const { opacity = 1, showBbox = showBoundingBoxes, bboxColor = boundingBoxColor, draggable = false, idx = null, showGreenBoxes = false } = options;
+    
+    // Calculate scaled font sizes for preview
+    const scaledNameSize = getScaledFontSize(nameSize);
+    const scaledDetailsSize = getScaledFontSize(detailsSize);
+    
     // Build details HTML with pipes
     let details_html = '';
     if (record.details && record.details.length) {
@@ -208,10 +233,10 @@ function renderCertificateHTML(record, options = {}) {
     return `
         <img src="${bgImg.src}" class="bg" style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;object-fit:cover;opacity:${opacity};" />
         <div class="bbox name-box" data-type="name" style="position:absolute;left:50%;top:${nameY}mm;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
-            <div class="name" style="color:${showGreenBoxes ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${nameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${escapeHtml(record.fullName)}</div>
+            <div class="name" style="color:${showGreenBoxes ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${scaledNameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${escapeHtml(record.fullName)}</div>
         </div>
         <div class="bbox details-box" data-type="details" style="position:absolute;left:50%;top:${detailsY}mm;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};">
-            <div class="details" style="font-size:${detailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${details_html}</div>
+            <div class="details" style="font-size:${scaledDetailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : '1'};">${details_html}</div>
         </div>
         <style>
         .pipe { color:#aa1f2e;font-weight:bold;padding:0 10mm;font-size:inherit; }
@@ -426,6 +451,13 @@ function stopDrag() {
     document.removeEventListener('mouseup', stopDrag);
     document.removeEventListener('touchend', stopDrag);
 }
+
+// Add resize listener to handle preview scaling
+window.addEventListener('resize', () => {
+    if (records.length && bgImg) {
+        updatePreview();
+    }
+});
     </script>
 </body>
 </html> 
