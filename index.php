@@ -100,14 +100,14 @@
     </style>
 </head>
 <body>
-<div class="container">
+    <div class="container">
     <h1>USA Archery - Bulk Certificate Generator</h1>
     <form id="cert-form" enctype="multipart/form-data">
         <div class="form-group">
             <label for="csv-input">Upload CSV File</label>
             <input type="file" id="csv-input" name="csv" accept=".csv" required>
         </div>
-        <div class="form-group">
+            <div class="form-group">
             <label for="bg-input">Upload Background Image (PNG)</label>
             <input type="file" id="bg-input" name="background" accept="image/png" required>
         </div>
@@ -127,12 +127,12 @@
                 <label for="name-y">Name Y Position</label>
                 <input type="range" id="name-y" min="0" max="850" value="400">
                 <span id="name-y-val">400</span>
-            </div>
+                    </div>
             <div class="slider-group">
                 <label for="details-y">Details Y Position</label>
                 <input type="range" id="details-y" min="0" max="850" value="500">
                 <span id="details-y-val">500</span>
-            </div>
+                </div>
             <div class="slider-group">
                 <label for="name-size">Name Font Size</label>
                 <input type="range" id="name-size" min="20" max="80" value="36">
@@ -142,13 +142,13 @@
                 <label for="details-size">Details Font Size</label>
                 <input type="range" id="details-size" min="10" max="40" value="18">
                 <span id="details-size-val">18</span>
-            </div>
+    </div>
         </div>
         <button type="submit" id="generate-btn" disabled>Generate PDF</button>
     </form>
     <div class="footer">&copy; USA Archery Certificate Generator</div>
-</div>
-<script>
+    </div>
+    <script>
 // --- State ---
 let records = [];
 let currentIdx = 0; // 0 = overlay, 1+ = individual
@@ -244,14 +244,13 @@ function parseCSV(text) {
 function drawDetailsBullets(ctx, details, fontPx, yPx) {
     // 0.25 inch = 6.35mm; MM_TO_PX = 10; so 63.5px
     const spacePx = 6.35 * MM_TO_PX;
-    // Bullet size: about 0.5em of fontPx (tweak as needed)
-    const bulletRadius = fontPx * 0.22;
+    const bullet = '|';
     let x = CANVAS_WIDTH/2;
     // Measure total width
     let totalWidth = 0;
     ctx.font = `bold ${fontPx}px 'Poppins', Arial, sans-serif`;
     for (let i = 0; i < details.length; ++i) {
-        if (i > 0) totalWidth += spacePx + bulletRadius * 2 + spacePx;
+        if (i > 0) totalWidth += spacePx + ctx.measureText(bullet).width + spacePx;
         totalWidth += ctx.measureText(details[i]).width;
     }
     // Start at left
@@ -259,15 +258,11 @@ function drawDetailsBullets(ctx, details, fontPx, yPx) {
     for (let i = 0; i < details.length; ++i) {
         if (i > 0) {
             x += spacePx;
-            // Draw bullet as a circle
             ctx.save();
-            ctx.fillStyle = '#aa1f2e'; // Red bullet
-            ctx.beginPath();
-            // Vertically center bullet with text baseline 'alphabetic'
-            ctx.arc(x + bulletRadius, yPx - bulletRadius * 0.2, bulletRadius, 0, 2 * Math.PI);
-            ctx.fill();
+            ctx.fillStyle = '#aa1f2e'; // Red bullet/pipe
+            ctx.fillText(bullet, x, yPx);
             ctx.restore();
-            x += bulletRadius * 2;
+            x += ctx.measureText(bullet).width;
             x += spacePx;
         }
         ctx.save();
@@ -382,7 +377,7 @@ csvInput.addEventListener('change', e => {
 });
 
 bgInput.addEventListener('change', e => {
-    const file = e.target.files[0];
+            const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = evt => {
@@ -544,7 +539,7 @@ document.getElementById('cert-form').addEventListener('submit', function(e) {
         generateBtn.disabled = false;
         generateBtn.textContent = 'Generate PDF';
     });
-});
-</script>
+        });
+    </script>
 </body>
 </html> 
