@@ -77,7 +77,7 @@ foreach ($records as $rec) {
     $pdf->AddPage();
     $w = $pdf->GetPageWidth();
     // Name
-    $pdf->SetFont('Poppins-Bold', '', $name_size_pt);
+    $pdf->SetFont('Helvetica', 'B', $name_size_pt);
     $pdf->SetTextColor(170, 31, 46);
     $name = $rec['fullName'];
     $name_w = $pdf->GetStringWidth($name);
@@ -87,7 +87,7 @@ foreach ($records as $rec) {
     // Details
     $details = array_filter($rec['details']);
     if ($details) {
-        $pdf->SetFont('Poppins-Bold', '', $details_size_pt);
+        $pdf->SetFont('Helvetica', 'B', $details_size_pt);
         $pdf->SetTextColor(28, 53, 94);
         $bullet = '•';
         $space = 6.35; // mm
