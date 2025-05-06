@@ -56,8 +56,8 @@ $defaultConfig = (new \Mpdf\Config\ConfigVariables())->getDefaults();
 $fontDirs = $defaultConfig['fontDir'];
 
 $mpdf = new \Mpdf\Mpdf([
-    'format' => [279.4, 215.9], // Letter landscape in mm
-    'orientation' => 'L',
+    'format' => 'Letter', // US Letter size (8.5x11")
+    'orientation' => 'L', // Landscape
     'margin_left' => 0,
     'margin_right' => 0,
     'margin_top' => 0,
