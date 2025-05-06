@@ -257,6 +257,17 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
             text-align: center;
             max-width: 80%;
         }
+        
+        .error-message {
+            background-color: #aa1f2e;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            display: none;
+            max-width: 80%;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -382,6 +393,9 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
             <p>Generating certificates...</p>
             <p>This may take a moment for large datasets.</p>
             <p>Please don't close this page.</p>
+        </div>
+        <div class="error-message" id="error-message">
+            An error occurred while generating certificates.
         </div>
     </div>
     
@@ -707,12 +721,13 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
         });
         
         // Show loading overlay when form is submitted
-        document.getElementById('certificate-form').addEventListener('submit', function() {
+        document.getElementById('certificate-form').addEventListener('submit', function(e) {
             const fileInput = document.getElementById('excel_file');
             const imageInput = document.getElementById('background_image');
             
             if (fileInput.files.length > 0 && imageInput.files.length > 0) {
                 document.getElementById('loading-overlay').style.display = 'flex';
+                document.getElementById('error-message').style.display = 'none';
                 
                 // Estimate processing time based on file size
                 const fileSize = fileInput.files[0].size;
@@ -722,6 +737,35 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
                 if (recordCount > 20) {
                     document.querySelector('.loading-message').innerHTML += 
                         `<p>Processing ${recordCount} certificates. This might take a few minutes.</p>`;
+                }
+                
+                // Set up tracking for when page navigates away - this would be for download or timeout
+                sessionStorage.setItem('certificate_generation_started', 'true');
+                sessionStorage.setItem('certificate_generation_time', Date.now());
+                
+                // The form will submit normally
+            }
+        });
+        
+        // Check if we're returning from a failed generation
+        window.addEventListener('load', function() {
+            if (sessionStorage.getItem('certificate_generation_started') === 'true') {
+                // Clear the flag
+                sessionStorage.removeItem('certificate_generation_started');
+                const generationTime = parseInt(sessionStorage.getItem('certificate_generation_time') || '0');
+                sessionStorage.removeItem('certificate_generation_time');
+                
+                // If we're back at the form within 5 seconds, it likely failed
+                if (generationTime && (Date.now() - generationTime < 5000)) {
+                    // Display error message
+                    document.getElementById('error-message').textContent = 'Certificate generation failed. Please try again or contact support.';
+                    document.getElementById('error-message').style.display = 'block';
+                    document.getElementById('loading-overlay').style.display = 'flex';
+                    
+                    // Auto-hide after 5 seconds
+                    setTimeout(function() {
+                        document.getElementById('loading-overlay').style.display = 'none';
+                    }, 5000);
                 }
             }
         });

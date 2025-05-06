@@ -229,11 +229,17 @@ try {
     }
     
     // Output PDF
-    error_log("Generating PDF with " . count($data) . " pages");
+    error_log("Generating PDF with " . $recordCount . " pages");
     
     // Make sure no output has been sent yet
     if (headers_sent($file, $linenum)) {
         error_log("Headers already sent in $file on line $linenum");
+        echo "<div style='color: red; padding: 20px; background: #fff; border: 2px solid #aa1f2e; margin: 20px;'>";
+        echo "<h2>Error: Unable to download certificates</h2>";
+        echo "<p>Headers have already been sent, which prevents the download from working properly.</p>";
+        echo "<p>Please try again or contact support if this problem persists.</p>";
+        echo "</div>";
+        exit;
     } else {
         error_log("Setting headers for PDF download");
     }
@@ -243,21 +249,31 @@ try {
         ob_end_clean();
     }
     
-    // Set headers for download
+    // Generate the PDF content as a string first
+    error_log("Generating PDF content as string");
+    $pdf_content = $pdf->Output('S');
+    $pdf_size = strlen($pdf_content);
+    error_log("PDF size: " . $pdf_size . " bytes");
+    
+    // Set comprehensive headers for reliable download
     header('Content-Type: application/pdf');
     header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Content-Length: ' . $pdf_size);
     header('Cache-Control: max-age=0');
+    header('Pragma: public');
+    header('Expires: 0');
     
+    // Output the PDF content
     error_log("Sending PDF to browser");
-    $pdf->Output('D', $filename);
+    echo $pdf_content;
     
     // Log the total processing time
     $endTime = microtime(true);
     $processingTime = $endTime - $startTime;
     error_log("Total processing time: " . round($processingTime, 2) . " seconds for $recordCount certificates");
     
-    // Note: PHP's temporary files are automatically deleted after the script finishes
-    // So we don't need to clean them up manually
+    // Force script termination to prevent any additional output
+    exit;
     
 } catch (Exception $e) {
     error_log('Certificate Generation Error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
