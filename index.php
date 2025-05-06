@@ -377,18 +377,6 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
                         <span class="slider-value" id="details-position-value"><?php echo $_SESSION['details_y_pos']; ?>%</span>
                     </div>
                 </div>
-                
-                <div id="csv-preview-container" class="csv-preview" style="display: none;">
-                    <h4>CSV Data Preview</h4>
-                    <div id="record-preview" class="record-preview"></div>
-                    
-                    <div class="record-navigation">
-                        <button id="prev-record" class="nav-button" disabled>&lt; Previous</button>
-                        <input type="range" id="record-slider" class="record-slider position-slider" min="0" max="0" value="0" step="1">
-                        <button id="next-record" class="nav-button" disabled>Next &gt;</button>
-                        <div id="record-counter" class="record-counter">Record 0 of 0</div>
-                    </div>
-                </div>
             </div>
 
             <button type="submit" name="submit">Generate Certificates</button>
@@ -528,34 +516,15 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
             if (csvData.length === 0) return;
             
             const record = csvData[index];
-            const recordPreview = document.getElementById('record-preview');
-            
-            // Create HTML for record display
-            let html = `
-                <div class="field"><span class="field-label">First Name:</span> ${record.firstName}</div>
-                <div class="field"><span class="field-label">Last Name:</span> ${record.lastName}</div>
-            `;
-            
-            if (record.columnC) html += `<div class="field"><span class="field-label">Column C:</span> ${record.columnC}</div>`;
-            if (record.columnD) html += `<div class="field"><span class="field-label">Column D:</span> ${record.columnD}</div>`;
-            if (record.columnE) html += `<div class="field"><span class="field-label">Column E:</span> ${record.columnE}</div>`;
-            
-            recordPreview.innerHTML = html;
             
             // Update counter text
             const counterText = `Record ${index + 1} of ${csvData.length}`;
-            document.getElementById('record-counter').textContent = counterText;
             document.getElementById('direct-counter').textContent = counterText;
             
-            // Update slider position
-            document.getElementById('record-slider').value = index;
-            
-            // Update button states - both sets of navigation controls
+            // Update button states - navigation controls
             const isFirst = index === 0;
             const isLast = index === csvData.length - 1;
             
-            document.getElementById('prev-record').disabled = isFirst;
-            document.getElementById('next-record').disabled = isLast;
             document.getElementById('prev-direct').disabled = isFirst;
             document.getElementById('next-direct').disabled = isLast;
             
@@ -645,14 +614,6 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
                     csvData = await parseCSV(file);
                     
                     if (csvData.length > 0) {
-                        // Show CSV preview
-                        document.getElementById('csv-preview-container').style.display = 'block';
-                        
-                        // Set up slider
-                        const slider = document.getElementById('record-slider');
-                        slider.max = csvData.length - 1;
-                        slider.value = 0;
-                        
                         // Display first record
                         displayRecord(0);
                     } else {
@@ -666,23 +627,6 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
         });
         
         // CSV navigation controls - main controls
-        document.getElementById('prev-record').addEventListener('click', function() {
-            if (currentRecordIndex > 0) {
-                displayRecord(currentRecordIndex - 1);
-            }
-        });
-        
-        document.getElementById('next-record').addEventListener('click', function() {
-            if (currentRecordIndex < csvData.length - 1) {
-                displayRecord(currentRecordIndex + 1);
-            }
-        });
-        
-        document.getElementById('record-slider').addEventListener('input', function() {
-            displayRecord(parseInt(this.value));
-        });
-        
-        // Direct navigation buttons below preview
         document.getElementById('prev-direct').addEventListener('click', function() {
             if (currentRecordIndex > 0) {
                 displayRecord(currentRecordIndex - 1);
