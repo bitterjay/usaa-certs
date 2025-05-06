@@ -249,11 +249,17 @@ function drawDetailsBullets(ctx, details, fontPx, yPx) {
     for (let i = 0; i < details.length; ++i) {
         if (i > 0) {
             x += spacePx;
+            ctx.save();
+            ctx.fillStyle = '#aa1f2e'; // Red bullet
             ctx.fillText(bullet, x, yPx);
+            ctx.restore();
             x += ctx.measureText(bullet).width;
             x += spacePx;
         }
+        ctx.save();
+        ctx.fillStyle = '#1c355e'; // Details text color
         ctx.fillText(details[i], x, yPx);
+        ctx.restore();
         x += ctx.measureText(details[i]).width;
     }
 }

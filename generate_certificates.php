@@ -102,7 +102,9 @@ foreach ($records as $rec) {
         foreach ($details as $i => $d) {
             if ($i > 0) {
                 $pdf->Cell($space, 10, '', 0, 0, 'L');
+                $pdf->SetTextColor(170, 31, 46);
                 $pdf->Cell($pdf->GetStringWidth($bullet), 10, $bullet, 0, 0, 'L');
+                $pdf->SetTextColor(28, 53, 94);
                 $pdf->Cell($space, 10, '', 0, 0, 'L');
             }
             $pdf->Cell($pdf->GetStringWidth($d), 10, $d, 0, 0, 'L');
