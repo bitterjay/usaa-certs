@@ -80,8 +80,7 @@ foreach ($records as $rec) {
     $pdf->SetTextColor(170, 31, 46);
     $name = $rec['fullName'];
     $name_w = $pdf->GetStringWidth($name);
-    // FPDF draws from the top, so subtract font size in mm to anchor at bottom
-    $name_top = $name_y_mm - ($name_size_pt * 0.3528); // 1pt = 0.3528mm
+    $name_top = $name_y_mm - ($name_size_pt * 0.3528);
     $pdf->SetXY(($w-$name_w)/2, $name_top);
     $pdf->Cell($name_w, 10, $name, 0, 1, 'C');
     // Details
@@ -89,11 +88,26 @@ foreach ($records as $rec) {
     if ($details) {
         $pdf->SetFont('Poppins', 'B', $details_size_pt);
         $pdf->SetTextColor(28, 53, 94);
-        $details_str = implode('      |      ', $details);
-        $details_w = $pdf->GetStringWidth($details_str);
-        $details_top = $details_y_mm - ($details_size_pt * 0.3528);
-        $pdf->SetXY(($w-$details_w)/2, $details_top);
-        $pdf->Cell($details_w, 10, $details_str, 0, 1, 'C');
+        $bullet = '•';
+        $space = 6.35; // mm
+        // Measure total width
+        $totalWidth = 0;
+        foreach ($details as $i => $d) {
+            if ($i > 0) $totalWidth += $space + $pdf->GetStringWidth($bullet) + $space;
+            $totalWidth += $pdf->GetStringWidth($d);
+        }
+        $x = ($w - $totalWidth) / 2;
+        $y = $details_y_mm - ($details_size_pt * 0.3528);
+        $pdf->SetXY($x, $y);
+        foreach ($details as $i => $d) {
+            if ($i > 0) {
+                $pdf->Cell($space, 10, '', 0, 0, 'L');
+                $pdf->Cell($pdf->GetStringWidth($bullet), 10, $bullet, 0, 0, 'L');
+                $pdf->Cell($space, 10, '', 0, 0, 'L');
+            }
+            $pdf->Cell($pdf->GetStringWidth($d), 10, $d, 0, 0, 'L');
+        }
+        $pdf->Ln(10);
     }
 }
 

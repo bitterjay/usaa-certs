@@ -232,6 +232,32 @@ function parseCSV(text) {
     }).filter(r => r.fullName);
 }
 
+function drawDetailsBullets(ctx, details, fontPx, yPx) {
+    // 0.25 inch = 6.35mm; MM_TO_PX = 10; so 63.5px
+    const spacePx = 6.35 * MM_TO_PX;
+    const bullet = '•';
+    let x = CANVAS_WIDTH/2;
+    // Measure total width
+    let totalWidth = 0;
+    ctx.font = `bold ${fontPx}px 'Poppins', Arial, sans-serif`;
+    for (let i = 0; i < details.length; ++i) {
+        if (i > 0) totalWidth += spacePx + ctx.measureText(bullet).width + spacePx;
+        totalWidth += ctx.measureText(details[i]).width;
+    }
+    // Start at left
+    x -= totalWidth/2;
+    for (let i = 0; i < details.length; ++i) {
+        if (i > 0) {
+            x += spacePx;
+            ctx.fillText(bullet, x, yPx);
+            x += ctx.measureText(bullet).width;
+            x += spacePx;
+        }
+        ctx.fillText(details[i], x, yPx);
+        x += ctx.measureText(details[i]).width;
+    }
+}
+
 function updatePreview() {
     if (!bgImg || !records.length) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -245,10 +271,9 @@ function updatePreview() {
     // Details
     ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
     ctx.fillStyle = '#1c355e';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic'; // anchor at bottom
-    let detailsText = records[currentIdx].details.join('      |      ');
-    ctx.fillText(detailsText, CANVAS_WIDTH/2, mmToPx(detailsY));
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    drawDetailsBullets(ctx, records[currentIdx].details, ptToPx(detailsSize), mmToPx(detailsY));
     // Slide indicator
     slideIndicator.textContent = `${currentIdx+1}/${records.length}`;
     prevBtn.disabled = currentIdx === 0;
