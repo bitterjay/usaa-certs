@@ -36,7 +36,73 @@ send "put generate_certificates.php\r"
 expect "sftp>"
 send "put error_log.php\r"
 expect "sftp>"
-send "put composer.json\r"
+send "put fpdf.php\r"
+expect "sftp>"
+send "put download_file.php\r"
+expect "sftp>"
+send "put download_prompt.php\r"
+expect "sftp>"
+
+# Create font directory
+send "mkdir font\r"
+expect {
+    "Couldn't create directory" { puts "Note: font directory already exists" }
+    "sftp>" { puts "Created font directory" }
+}
+expect "sftp>"
+
+# Upload font files
+send "cd font\r"
+expect "sftp>"
+send "put font/courier.php\r"
+expect "sftp>"
+send "put font/courierb.php\r"
+expect "sftp>"
+send "put font/courierbi.php\r"
+expect "sftp>"
+send "put font/courieri.php\r"
+expect "sftp>"
+send "put font/helvetica.php\r"
+expect "sftp>"
+send "put font/helveticab.php\r"
+expect "sftp>"
+send "put font/helveticabi.php\r"
+expect "sftp>"
+send "put font/helveticai.php\r"
+expect "sftp>"
+send "put font/times.php\r"
+expect "sftp>"
+send "put font/timesb.php\r"
+expect "sftp>"
+send "put font/timesi.php\r"
+expect "sftp>"
+send "put font/timesbi.php\r"
+expect "sftp>"
+send "put font/symbol.php\r"
+expect "sftp>"
+send "put font/zapfdingbats.php\r"
+expect "sftp>"
+send "put font/poppins.php\r"
+expect "sftp>"
+send "put font/poppins.z\r"
+expect "sftp>"
+send "cd ..\r"
+expect "sftp>"
+
+# Create fonts directory for the web font
+send "mkdir fonts\r"
+expect {
+    "Couldn't create directory" { puts "Note: fonts directory already exists" }
+    "sftp>" { puts "Created fonts directory" }
+}
+expect "sftp>"
+
+# Upload font files
+send "cd fonts\r"
+expect "sftp>"
+send "put fonts/Poppins-Bold.ttf\r"
+expect "sftp>"
+send "cd ..\r"
 expect "sftp>"
 
 # Create and set permissions for uploads directory
@@ -47,14 +113,6 @@ expect {
 }
 expect "sftp>"
 send "chmod 777 uploads\r"
-expect "sftp>"
-
-# Create vendor directory if it doesn't exist
-send "mkdir vendor\r"
-expect {
-    "Couldn't create directory" { puts "Note: vendor directory already exists" }
-    "sftp>" { puts "Created vendor directory" }
-}
 expect "sftp>"
 
 send "bye\r"
@@ -71,10 +129,6 @@ echo "Uploading files..."
 # Check if the expect script ran successfully
 if [ $? -eq 0 ]; then
     echo "Deployment completed successfully!"
-    echo "IMPORTANT: Please install Composer dependencies on the server manually:"
-    echo "1. Log into your hosting control panel"
-    echo "2. Navigate to the public_html directory"
-    echo "3. Run: composer install --no-dev"
 else
     echo "Error during deployment. Please check your credentials and try again."
 fi
