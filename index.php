@@ -255,7 +255,7 @@ function renderCertificateHTML(record, options = {}) {
         </div>
         <style>
         .pipe { color:#aa1f2e;font-weight:bold;padding:0 10mm;font-size:inherit; }
-        .bbox { width:max-content;max-width:100%; }
+        .bbox { width:max-content;max-width:100%;pointer-events:${draggable ? 'auto' : 'none'}; }
         </style>
     `;
 }
@@ -430,17 +430,21 @@ function startDrag(type) {
     return function(e) {
         e.preventDefault();
         dragging = type;
+        
+        // Get the clicked element and its position
+        const box = e.currentTarget;
+        const boxRect = box.getBoundingClientRect();
         let clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        const wrapper = document.getElementById('certificate-preview-wrapper');
-        const rect = wrapper.getBoundingClientRect();
-        dragOffsetY = clientY - rect.top;
+        
+        // Calculate offset from the center of the box
+        dragOffsetY = clientY - (boxRect.top + boxRect.height / 2);
+        
         document.addEventListener('mousemove', onDrag);
         document.addEventListener('touchmove', onDrag, { passive: false });
         document.addEventListener('mouseup', stopDrag);
         document.addEventListener('touchend', stopDrag);
         
         // Add dragging class to show feedback
-        const box = certPreview.querySelector(`.bbox.${type}-box`);
         if (box) {
             box.style.cursor = 'grabbing';
         }
@@ -449,10 +453,15 @@ function startDrag(type) {
 function onDrag(e) {
     if (!dragging) return;
     e.preventDefault(); // Prevent scrolling on touch devices
+    
     let clientY = e.touches ? e.touches[0].clientY : e.clientY;
     const wrapper = document.getElementById('certificate-preview-wrapper');
     const rect = wrapper.getBoundingClientRect();
-    let yPx = clientY - rect.top;
+    const box = certPreview.querySelector(`.bbox.${dragging}-box`);
+    const boxHeight = box ? box.offsetHeight : 0;
+    
+    // Calculate position accounting for the box height and drag offset
+    let yPx = (clientY - dragOffsetY) - rect.top - (boxHeight / 2);
     
     // Convert px to mm, accounting for scale
     const scale = getPreviewScale();
