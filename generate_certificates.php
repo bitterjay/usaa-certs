@@ -255,24 +255,23 @@ try {
     $pdf_size = strlen($pdf_content);
     error_log("PDF size: " . $pdf_size . " bytes");
     
-    // Set comprehensive headers for reliable download
-    header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename="' . $filename . '"');
-    header('Content-Length: ' . $pdf_size);
-    header('Cache-Control: max-age=0');
-    header('Pragma: public');
-    header('Expires: 0');
+    // Create a temporary file for the PDF and save it
+    $temp_dir = sys_get_temp_dir();
+    $temp_file = tempnam($temp_dir, 'usaa_certs_');
+    file_put_contents($temp_file, $pdf_content);
     
-    // Output the PDF content
-    error_log("Sending PDF to browser");
-    echo $pdf_content;
+    // Store the PDF file path and information in the session
+    $_SESSION['pdf_file'] = $temp_file;
+    $_SESSION['pdf_filename'] = $filename;
+    $_SESSION['record_count'] = $recordCount;
     
     // Log the total processing time
     $endTime = microtime(true);
     $processingTime = $endTime - $startTime;
     error_log("Total processing time: " . round($processingTime, 2) . " seconds for $recordCount certificates");
     
-    // Force script termination to prevent any additional output
+    // Redirect to download prompt page
+    header('Location: download_prompt.php');
     exit;
     
 } catch (Exception $e) {

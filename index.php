@@ -3,6 +3,17 @@ session_start();
 // Define application version
 $app_version = "1.4.2";
 
+// Clear previous PDF file data
+if (isset($_SESSION['pdf_file'])) {
+    // Delete temporary file if it exists
+    if (file_exists($_SESSION['pdf_file'])) {
+        @unlink($_SESSION['pdf_file']);
+    }
+    unset($_SESSION['pdf_file']);
+    unset($_SESSION['pdf_filename']);
+    unset($_SESSION['record_count']);
+}
+
 // Initialize position values in session if not set
 if (!isset($_SESSION['name_y_pos'])) $_SESSION['name_y_pos'] = 50;
 if (!isset($_SESSION['details_y_pos'])) $_SESSION['details_y_pos'] = 60;
@@ -739,9 +750,8 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
                         `<p>Processing ${recordCount} certificates. This might take a few minutes.</p>`;
                 }
                 
-                // Set up tracking for when page navigates away - this would be for download or timeout
-                sessionStorage.setItem('certificate_generation_started', 'true');
-                sessionStorage.setItem('certificate_generation_time', Date.now());
+                // We don't need to track generation for download since we're now using a prompt page
+                // that will handle showing the success message
                 
                 // The form will submit normally
             }
@@ -749,25 +759,20 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
         
         // Check if we're returning from a failed generation
         window.addEventListener('load', function() {
-            if (sessionStorage.getItem('certificate_generation_started') === 'true') {
-                // Clear the flag
-                sessionStorage.removeItem('certificate_generation_started');
-                const generationTime = parseInt(sessionStorage.getItem('certificate_generation_time') || '0');
-                sessionStorage.removeItem('certificate_generation_time');
-                
-                // If we're back at the form within 5 seconds, it likely failed
-                if (generationTime && (Date.now() - generationTime < 5000)) {
-                    // Display error message
-                    document.getElementById('error-message').textContent = 'Certificate generation failed. Please try again or contact support.';
-                    document.getElementById('error-message').style.display = 'block';
-                    document.getElementById('loading-overlay').style.display = 'flex';
-                    
-                    // Auto-hide after 5 seconds
-                    setTimeout(function() {
-                        document.getElementById('loading-overlay').style.display = 'none';
-                    }, 5000);
-                }
-            }
+            // Check if there was an error message set
+            <?php if (isset($_SESSION['error']) && !empty($_SESSION['error'])): ?>
+            document.getElementById('error-message').textContent = '<?php echo addslashes($_SESSION['error']); ?>';
+            document.getElementById('error-message').style.display = 'block';
+            document.getElementById('loading-overlay').style.display = 'flex';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(function() {
+                document.getElementById('loading-overlay').style.display = 'none';
+            }, 5000);
+            <?php 
+            // Clear the error message
+            unset($_SESSION['error']);
+            endif; ?>
         });
     </script>
 </body>
