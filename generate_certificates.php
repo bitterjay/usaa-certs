@@ -69,8 +69,6 @@ class CertificatePDF extends FPDF {
 $pdf = new CertificatePDF('L', 'mm', array(279.4, 215.9)); // Letter landscape
 $pdf->SetAutoPageBreak(false);
 $pdf->SetMargins(0, 0, 0);
-$pdf->AddFont('Poppins', 'B', 'poppins.php');
-$pdf->AddFont('Poppins-Bold', '', 'Poppins-Bold.php');
 $pdf->setBg($bg_tmp_with_ext);
 
 foreach ($records as $rec) {
