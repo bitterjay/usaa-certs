@@ -29,7 +29,7 @@ expect "sftp>"
 send "cd $SFTP_PATH\r"
 expect "sftp>"
 
-# Upload PHP files
+# Upload main PHP files
 send "put index.php\r"
 expect "sftp>"
 send "put generate_certificates.php\r"
@@ -43,15 +43,7 @@ expect "sftp>"
 send "put download_prompt.php\r"
 expect "sftp>"
 
-# Create font directory
-send "mkdir font\r"
-expect {
-    "Couldn't create directory" { puts "Note: font directory already exists" }
-    "sftp>" { puts "Created font directory" }
-}
-expect "sftp>"
-
-# Upload font files
+# Upload font files directly to existing font directory
 send "cd font\r"
 expect "sftp>"
 send "put font/courier.php\r"
@@ -89,30 +81,12 @@ expect "sftp>"
 send "cd ..\r"
 expect "sftp>"
 
-# Create fonts directory for the web font
-send "mkdir fonts\r"
-expect {
-    "Couldn't create directory" { puts "Note: fonts directory already exists" }
-    "sftp>" { puts "Created fonts directory" }
-}
-expect "sftp>"
-
-# Upload font files
+# Upload web font directly to existing fonts directory
 send "cd fonts\r"
 expect "sftp>"
 send "put fonts/Poppins-Bold.ttf\r"
 expect "sftp>"
 send "cd ..\r"
-expect "sftp>"
-
-# Create and set permissions for uploads directory
-send "mkdir uploads\r"
-expect {
-    "Couldn't create directory" { puts "Note: uploads directory already exists" }
-    "sftp>" { puts "Created uploads directory" }
-}
-expect "sftp>"
-send "chmod 777 uploads\r"
 expect "sftp>"
 
 send "bye\r"
