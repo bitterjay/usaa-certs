@@ -274,7 +274,13 @@ function drawDetailsBullets(ctx, details, fontPx, yPx) {
 }
 
 function drawBoundingBox(x, y, w, h, color) {
+    // Draw faint green background (5% opacity)
     ctx.save();
+    ctx.globalAlpha = 0.05;
+    ctx.fillStyle = '#00c853';
+    ctx.fillRect(x, y, w, h);
+    ctx.globalAlpha = 1.0;
+    // Draw border
     ctx.strokeStyle = color;
     ctx.lineWidth = 1;
     ctx.setLineDash([2,2]);
