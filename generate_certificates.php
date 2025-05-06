@@ -43,6 +43,7 @@ $bg_tmp_with_ext = tempnam(sys_get_temp_dir(), 'bg_') . '.png';
 copy($bg_path, $bg_tmp_with_ext);
 
 $records = parse_csv($csv_path);
+error_log('Parsed CSV records: ' . print_r($records, true));
 if (!$records) {
     http_response_code(400);
     echo 'No valid records in CSV.';
