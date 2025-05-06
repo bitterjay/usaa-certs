@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Define application version
-$app_version = "1.4.2";
+$app_version = "1.4.3";
 
 // Clear previous PDF file data
 if (isset($_SESSION['pdf_file'])) {

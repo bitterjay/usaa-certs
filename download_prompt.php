@@ -140,6 +140,6 @@ $record_count = isset($_SESSION['record_count']) ? $_SESSION['record_count'] : 0
         <a href="index.php" class="home-link">Return to Certificate Generator</a>
     </div>
     
-    <div class="version">v<?php echo isset($app_version) ? $app_version : '1.4.2'; ?></div>
+    <div class="version">v<?php echo isset($app_version) ? $app_version : '1.4.3'; ?></div>
 </body>
 </html> 
