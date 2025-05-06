@@ -1,7 +1,7 @@
 <?php
 session_start();
 // Define application version
-$app_version = "1.4.1";
+$app_version = "1.4.2";
 
 // Initialize position values in session if not set
 if (!isset($_SESSION['name_y_pos'])) $_SESSION['name_y_pos'] = 50;
