@@ -38,6 +38,10 @@ $details_y = isset($_POST['details_y']) ? intval($_POST['details_y']) : 500;
 $name_size = isset($_POST['name_size']) ? intval($_POST['name_size']) : 36;
 $details_size = isset($_POST['details_size']) ? intval($_POST['details_size']) : 18;
 
+// Ensure the background image has a .png extension for FPDF
+$bg_tmp_with_ext = tempnam(sys_get_temp_dir(), 'bg_') . '.png';
+copy($bg_path, $bg_tmp_with_ext);
+
 $records = parse_csv($csv_path);
 if (!$records) {
     http_response_code(400);
@@ -59,7 +63,7 @@ $pdf = new CertificatePDF('L', 'mm', array(279.4, 215.9)); // Letter landscape
 $pdf->SetAutoPageBreak(false);
 $pdf->SetMargins(0, 0, 0);
 $pdf->AddFont('Poppins', 'B', 'poppins.php');
-$pdf->setBg($bg_path);
+$pdf->setBg($bg_tmp_with_ext);
 
 foreach ($records as $rec) {
     $pdf->AddPage();
@@ -88,5 +92,6 @@ header('Content-Type: application/pdf');
 header('Content-Disposition: attachment; filename="certificates.pdf"');
 header('Content-Length: ' . strlen($pdf_content));
 echo $pdf_content;
+@unlink($bg_tmp_with_ext);
 exit;
 ?> 
