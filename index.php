@@ -101,7 +101,7 @@
 </head>
 <body>
 <div class="container">
-    <h1>USA Archery Certificate Generator</h1>
+    <h1>USA Archery - Bulk Certificate Generator</h1>
     <form id="cert-form" enctype="multipart/form-data">
         <div class="form-group">
             <label for="csv-input">Upload CSV File</label>
@@ -146,7 +146,7 @@
 <script>
 // --- State ---
 let records = [];
-let currentIdx = 0;
+let currentIdx = 0; // 0 = overlay, 1+ = individual
 let bgImg = null;
 let nameY = 111.8, detailsY = 130.1, nameSize = 36, detailsSize = 18;
 let dragging = null; // 'name' or 'details'
@@ -268,22 +268,40 @@ function updatePreview() {
     if (!bgImg || !records.length) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-    // Name
-    ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
-    ctx.fillStyle = '#aa1f2e';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic'; // anchor at bottom
-    ctx.fillText(records[currentIdx].fullName, CANVAS_WIDTH/2, mmToPx(nameY));
-    // Details
-    ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
-    ctx.fillStyle = '#1c355e';
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'alphabetic';
-    drawDetailsBullets(ctx, records[currentIdx].details, ptToPx(detailsSize), mmToPx(detailsY));
+    if (currentIdx === 0) {
+        // Overlay all records at 1% opacity
+        ctx.globalAlpha = 0.01;
+        for (let i = 0; i < records.length; ++i) {
+            // Name
+            ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
+            ctx.fillStyle = '#aa1f2e';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'alphabetic';
+            ctx.fillText(records[i].fullName, CANVAS_WIDTH/2, mmToPx(nameY));
+            // Details
+            ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
+            ctx.textAlign = 'left';
+            ctx.textBaseline = 'alphabetic';
+            drawDetailsBullets(ctx, records[i].details, ptToPx(detailsSize), mmToPx(detailsY));
+        }
+        ctx.globalAlpha = 1.0;
+    } else {
+        // Normal single record
+        ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
+        ctx.fillStyle = '#aa1f2e';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'alphabetic';
+        ctx.fillText(records[currentIdx-1].fullName, CANVAS_WIDTH/2, mmToPx(nameY));
+        ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
+        ctx.fillStyle = '#1c355e';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+        drawDetailsBullets(ctx, records[currentIdx-1].details, ptToPx(detailsSize), mmToPx(detailsY));
+    }
     // Slide indicator
-    slideIndicator.textContent = `${currentIdx+1}/${records.length}`;
+    slideIndicator.textContent = `${currentIdx}/${records.length}`;
     prevBtn.disabled = currentIdx === 0;
-    nextBtn.disabled = currentIdx === records.length-1;
+    nextBtn.disabled = currentIdx === records.length;
 }
 
 csvInput.addEventListener('change', e => {
@@ -327,7 +345,7 @@ prevBtn.addEventListener('click', () => {
     }
 });
 nextBtn.addEventListener('click', () => {
-    if (currentIdx < records.length-1) {
+    if (currentIdx < records.length) {
         currentIdx++;
         updatePreview();
     }
