@@ -270,8 +270,140 @@ try {
     $processingTime = $endTime - $startTime;
     error_log("Total processing time: " . round($processingTime, 2) . " seconds for $recordCount certificates");
     
-    // Redirect to download prompt page
-    header('Location: download_prompt.php');
+    // Output the processing complete page with confirmation to proceed to download
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>USA Archery Certificate Generator - Processing Complete</title>
+        <style>
+            @font-face {
+                font-family: 'Poppins';
+                src: url('fonts/Poppins-Bold.ttf') format('truetype');
+                font-weight: bold;
+                font-style: normal;
+            }
+            
+            body {
+                font-family: 'Poppins', Arial, sans-serif;
+                line-height: 1.6;
+                margin: 0;
+                padding: 20px;
+                background-color: #f5f5f5;
+                position: relative;
+                min-height: 100vh;
+            }
+            
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                background-color: white;
+                padding: 40px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                text-align: center;
+                margin-top: 60px;
+            }
+            
+            h1 {
+                color: #333;
+                margin-bottom: 20px;
+            }
+            
+            .processing-icon {
+                display: inline-block;
+                width: 80px;
+                height: 80px;
+                background-color: #4CAF50;
+                border-radius: 50%;
+                margin-bottom: 20px;
+                position: relative;
+            }
+            
+            .processing-icon:after {
+                content: '';
+                position: absolute;
+                top: 25px;
+                left: 28px;
+                width: 25px;
+                height: 15px;
+                border-left: 3px solid white;
+                border-bottom: 3px solid white;
+                transform: rotate(-45deg);
+            }
+            
+            .button {
+                background-color: #aa1f2e; /* USA Archery Red */
+                color: white;
+                padding: 15px 30px;
+                border: none;
+                border-radius: 4px;
+                font-size: 18px;
+                cursor: pointer;
+                margin: 20px 0;
+                display: inline-block;
+                text-decoration: none;
+                transition: background-color 0.3s;
+            }
+            
+            .button:hover {
+                background-color: #8e1926;
+            }
+            
+            .certificate-info {
+                margin: 20px 0;
+                padding: 15px;
+                background-color: #f9f9f9;
+                border-radius: 4px;
+                text-align: left;
+            }
+            
+            .home-link {
+                margin-top: 20px;
+                display: inline-block;
+                color: #1c355e; /* USA Archery Blue */
+                text-decoration: none;
+            }
+            
+            .home-link:hover {
+                text-decoration: underline;
+            }
+            
+            .version {
+                position: fixed;
+                bottom: 10px;
+                right: 20px;
+                font-size: 12px;
+                color: #888;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="processing-icon"></div>
+            <h1>Certificate Processing Complete</h1>
+            
+            <p>Your certificates have been processed successfully and are ready for download.</p>
+            
+            <div class="certificate-info">
+                <p><strong>File:</strong> <?php echo htmlspecialchars($filename); ?></p>
+                <p><strong>Certificates Generated:</strong> <?php echo $recordCount; ?></p>
+                <p><strong>Processing Time:</strong> <?php echo round($processingTime, 2); ?> seconds</p>
+            </div>
+            
+            <a href="download_prompt.php" class="button">Continue to Download</a>
+            
+            <p>Click the button above to proceed to the download page.</p>
+            
+            <a href="index.php" class="home-link">Cancel and Return to Generator</a>
+        </div>
+        
+        <div class="version">v<?php echo isset($app_version) ? $app_version : '1.4.3'; ?></div>
+    </body>
+    </html>
+    <?php
     exit;
     
 } catch (Exception $e) {

@@ -401,12 +401,12 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
     <div id="loading-overlay">
         <div class="spinner"></div>
         <div class="loading-message">
-            <p>Generating certificates...</p>
+            <p>Processing certificates...</p>
             <p>This may take a moment for large datasets.</p>
             <p>Please don't close this page.</p>
         </div>
         <div class="error-message" id="error-message">
-            An error occurred while generating certificates.
+            An error occurred while processing certificates.
         </div>
     </div>
     
