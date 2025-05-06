@@ -2,8 +2,26 @@
 session_start();
 require('fpdf.php');
 
+// Enable error logging
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+ini_set('error_log', 'pdf_generation_errors.log');
+error_reporting(E_ALL);
+
+// Debug session variables
+error_log("Starting certificate generation with session data: " . json_encode($_SESSION));
+
 // Check if files are available in session
 if (!isset($_SESSION['excel_file']) || !isset($_SESSION['background_image'])) {
+    error_log("Missing required files in session");
+    header('Location: index.php');
+    exit;
+}
+
+// Check if temporary files still exist
+if (!file_exists($_SESSION['excel_file']) || !file_exists($_SESSION['background_image'])) {
+    error_log("Temporary files no longer exist - session may have expired");
+    $_SESSION['error'] = 'File processing error. Please try uploading again.';
     header('Location: index.php');
     exit;
 }
@@ -36,8 +54,10 @@ try {
     $nameFontSize = isset($_SESSION['name_font_size']) ? $_SESSION['name_font_size'] : 30;
     $detailsFontSize = isset($_SESSION['details_font_size']) ? $_SESSION['details_font_size'] : 16;
     
-    // Parse the CSV data
+    // Parse the CSV data from the temporary file
+    error_log("Parsing CSV file: " . $_SESSION['excel_file']);
     $data = parseInputFile($_SESSION['excel_file']);
+    error_log("Found " . count($data) . " records in CSV file");
     
     // Create PDF
     class CertificatePDF extends FPDF {
@@ -46,6 +66,7 @@ try {
         public $detailsYPercent = 60;
         public $nameFontSize = 30;
         public $detailsFontSize = 16;
+        public $bgImage = '';
         
         // Set text position values
         public function setPositions($nameY, $detailsY) {
@@ -59,11 +80,16 @@ try {
             $this->detailsFontSize = $detailsSize;
         }
         
+        // Set background image
+        public function setBgImage($image) {
+            $this->bgImage = $image;
+        }
+        
         // Header - will contain background image
         function Header() {
-            if (isset($_SESSION['background_image'])) {
+            if ($this->bgImage && file_exists($this->bgImage)) {
                 // Add background image
-                $this->Image($_SESSION['background_image'], 0, 0, $this->GetPageWidth(), $this->GetPageHeight());
+                $this->Image($this->bgImage, 0, 0, $this->GetPageWidth(), $this->GetPageHeight());
             }
         }
         
@@ -103,13 +129,19 @@ try {
     }
 
     // Initialize PDF
+    error_log("Initializing PDF");
     $pdf = new CertificatePDF('L', 'mm', 'Letter'); // Landscape orientation
     $pdf->SetAutoPageBreak(false);
     $pdf->SetMargins(0, 0, 0);
     $pdf->setPositions($nameYPosition, $detailsYPosition);
     $pdf->setFontSizes($nameFontSize, $detailsFontSize);
+    $pdf->setBgImage($_SESSION['background_image']);
     
     // Add Poppins font
+    error_log("Adding Poppins font");
+    if (!file_exists('font/poppins.php')) {
+        error_log("Error: font/poppins.php not found");
+    }
     $pdf->AddFont('Poppins', 'B', 'poppins.php');
 
     // Add a page for each entry
@@ -166,19 +198,41 @@ try {
         }
     }
 
-    // Output PDF
-    header('Content-Type: application/pdf');
-    header('Content-Disposition: attachment; filename="USAA_Certificates.pdf"');
-    $pdf->Output('D', 'USAA_Certificates.pdf');
+    // Prepare filename from original file
+    $filename = 'USAA_Certificates.pdf';
+    if (isset($_SESSION['excel_filename'])) {
+        $base = pathinfo($_SESSION['excel_filename'], PATHINFO_FILENAME);
+        $filename = 'USAA_Certificates_' . $base . '.pdf';
+    }
     
-    // Clean up
-    unlink($_SESSION['excel_file']);
-    unlink($_SESSION['background_image']);
-    unset($_SESSION['excel_file']);
-    unset($_SESSION['background_image']);
+    // Output PDF
+    error_log("Generating PDF with " . count($data) . " pages");
+    
+    // Make sure no output has been sent yet
+    if (headers_sent($file, $linenum)) {
+        error_log("Headers already sent in $file on line $linenum");
+    } else {
+        error_log("Setting headers for PDF download");
+    }
+    
+    // Explicitly clear any previous output buffering
+    while (ob_get_level()) {
+        ob_end_clean();
+    }
+    
+    // Set headers for download
+    header('Content-Type: application/pdf');
+    header('Content-Disposition: attachment; filename="' . $filename . '"');
+    header('Cache-Control: max-age=0');
+    
+    error_log("Sending PDF to browser");
+    $pdf->Output('D', $filename);
+    
+    // Note: PHP's temporary files are automatically deleted after the script finishes
+    // So we don't need to clean them up manually
     
 } catch (Exception $e) {
-    error_log('Certificate Generation Error: ' . $e->getMessage());
+    error_log('Certificate Generation Error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
     $_SESSION['error'] = 'Error generating certificates. Please try again.';
     header('Location: index.php');
     exit;

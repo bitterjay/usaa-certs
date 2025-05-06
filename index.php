@@ -228,36 +228,26 @@ if (!isset($_SESSION['details_font_size'])) $_SESSION['details_font_size'] = 16;
         
         <?php
         if (isset($_POST['submit'])) {
-            // Create uploads directory if it doesn't exist
-            if (!file_exists('uploads')) {
-                mkdir('uploads', 0777, true);
-            }
-
-            // Handle file uploads
-            if (!empty($_FILES['excel_file']['name']) && !empty($_FILES['background_image']['name'])) {
+            // Process files directly instead of uploading them
+            if (!empty($_FILES['excel_file']['tmp_name']) && !empty($_FILES['background_image']['tmp_name'])) {
                 $excel_tmp = $_FILES['excel_file']['tmp_name'];
                 $bg_tmp = $_FILES['background_image']['tmp_name'];
                 
-                $excel_path = 'uploads/' . basename($_FILES['excel_file']['name']);
-                $bg_path = 'uploads/' . basename($_FILES['background_image']['name']);
-                
-                // Save font size settings to session
+                // Save font size and position settings to session
                 $_SESSION['name_font_size'] = isset($_POST['name_font_size']) ? intval($_POST['name_font_size']) : 30;
                 $_SESSION['details_font_size'] = isset($_POST['details_font_size']) ? intval($_POST['details_font_size']) : 16;
                 $_SESSION['name_y_pos'] = isset($_POST['name_y_pos']) ? floatval($_POST['name_y_pos']) : 50;
                 $_SESSION['details_y_pos'] = isset($_POST['details_y_pos']) ? floatval($_POST['details_y_pos']) : 60;
                 
-                if (move_uploaded_file($excel_tmp, $excel_path) && 
-                    move_uploaded_file($bg_tmp, $bg_path)) {
-                    
-                    $_SESSION['excel_file'] = $excel_path;
-                    $_SESSION['background_image'] = $bg_path;
-                    
-                    header('Location: generate_certificates.php');
-                    exit;
-                } else {
-                    echo '<div class="error">Error uploading files. Please try again.</div>';
-                }
+                // Store the paths to the temporary files directly
+                $_SESSION['excel_file'] = $excel_tmp;
+                $_SESSION['background_image'] = $bg_tmp;
+                $_SESSION['excel_filename'] = $_FILES['excel_file']['name'];
+                $_SESSION['bg_filename'] = $_FILES['background_image']['name'];
+                
+                // Redirect to certificate generation script
+                header('Location: generate_certificates.php');
+                exit;
             } else {
                 echo '<div class="error">Please select both an Excel file and a background image.</div>';
             }
