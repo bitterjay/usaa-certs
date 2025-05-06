@@ -85,7 +85,7 @@ try {
             $details_html = '';
             foreach ($details as $i => $d) {
                 if ($i > 0) {
-                    $details_html .= '<span style="color:#aa1f2e;font-weight:bold;margin:0 6.35mm;">|</span>';
+                    $details_html .= '<span class="pipe">|</span>';
                 }
                 $details_html .= '<span style="color:#1c355e;font-weight:bold;">' . htmlspecialchars($d) . '</span>';
             }
@@ -97,7 +97,7 @@ try {
             font-weight: bold;
         }
         body { margin: 0; padding: 0; }
-        .bg { position: absolute; left: 0; top: 0; width: 279.4mm; height: 215.9mm; z-index: 0; }
+        .bg { position: absolute; left: 0; top: 0; width: 279.4mm; height: 215.9mm; z-index: 0; object-fit: cover; }
         .name {
             position: absolute;
             left: 50%;
@@ -109,6 +109,8 @@ try {
             font-weight: bold;
             white-space: nowrap;
             z-index: 1;
+            text-align: center;
+            width: 100%;
         }
         .details {
             position: absolute;
@@ -120,9 +122,17 @@ try {
             font-weight: bold;
             white-space: nowrap;
             z-index: 1;
+            text-align: center;
+            width: 100%;
         }
         body, .name, .details {
             font-family: "Poppins", Arial, sans-serif !important;
+        }
+        .pipe {
+            color: #aa1f2e;
+            font-weight: bold;
+            padding: 0 10mm;
+            font-size: inherit;
         }
         </style></head><body>
         <img src="' . $bg_url . '" class="bg" />

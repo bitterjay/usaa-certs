@@ -112,7 +112,9 @@
             <input type="file" id="bg-input" name="background" accept="image/png" required>
         </div>
         <div id="preview-area" style="display:none;">
-            <canvas id="preview-canvas" width="1100" height="850"></canvas>
+            <div id="certificate-preview-wrapper" style="width:100%;max-width:900px;margin:0 auto;position:relative;aspect-ratio:279.4/215.9;background:#eee;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
+                <div id="certificate-preview" style="width:100%;height:100%;position:absolute;left:0;top:0;"></div>
+            </div>
             <div class="controls">
                 <button type="button" id="prev-btn">&lt; Prev</button>
                 <span id="slide-indicator">1/1</span>
@@ -125,24 +127,24 @@
             </div>
             <div class="slider-group">
                 <label for="name-y">Name Y Position</label>
-                <input type="range" id="name-y" min="0" max="850" value="400">
-                <span id="name-y-val">400</span>
-                    </div>
+                <input type="range" id="name-y" min="0" max="215.9" step="0.1" value="111.8">
+                <span id="name-y-val">111.8</span>
+            </div>
             <div class="slider-group">
                 <label for="details-y">Details Y Position</label>
-                <input type="range" id="details-y" min="0" max="850" value="500">
-                <span id="details-y-val">500</span>
-                </div>
+                <input type="range" id="details-y" min="0" max="215.9" step="0.1" value="130.1">
+                <span id="details-y-val">130.1</span>
+            </div>
             <div class="slider-group">
                 <label for="name-size">Name Font Size</label>
-                <input type="range" id="name-size" min="20" max="80" value="36">
+                <input type="range" id="name-size" min="10" max="80" step="1" value="36">
                 <span id="name-size-val">36</span>
             </div>
             <div class="slider-group">
                 <label for="details-size">Details Font Size</label>
-                <input type="range" id="details-size" min="10" max="40" value="18">
+                <input type="range" id="details-size" min="10" max="40" step="1" value="18">
                 <span id="details-size-val">18</span>
-    </div>
+            </div>
         </div>
         <button type="submit" id="generate-btn" disabled>Generate PDF</button>
     </form>
@@ -151,19 +153,18 @@
     <script>
 // --- State ---
 let records = [];
-let currentIdx = 0; // 0 = overlay, 1+ = individual
+let currentIdx = 0;
 let bgImg = null;
 let nameY = 111.8, detailsY = 130.1, nameSize = 36, detailsSize = 18;
-let dragging = null; // 'name' or 'details'
-let dragOffsetY = 0;
 let showBoundingBoxes = true;
 let boundingBoxColor = '#00c853';
+let dragging = null; // 'name' or 'details'
+let dragOffsetY = 0;
 
 const csvInput = document.getElementById('csv-input');
 const bgInput = document.getElementById('bg-input');
 const previewArea = document.getElementById('preview-area');
-const canvas = document.getElementById('preview-canvas');
-const ctx = canvas.getContext('2d');
+const certPreview = document.getElementById('certificate-preview');
 const prevBtn = document.getElementById('prev-btn');
 const nextBtn = document.getElementById('next-btn');
 const slideIndicator = document.getElementById('slide-indicator');
@@ -179,56 +180,6 @@ const generateBtn = document.getElementById('generate-btn');
 const showBboxCheckbox = document.getElementById('show-bbox');
 const bboxColorInput = document.getElementById('bbox-color');
 
-// PDF dimensions: 279.4mm x 215.9mm (landscape)
-const PDF_WIDTH_MM = 279.4;
-const PDF_HEIGHT_MM = 215.9;
-const MM_TO_PX = 10; // 1mm = 10px for high-res preview
-const CANVAS_WIDTH = Math.round(PDF_WIDTH_MM * MM_TO_PX); // 2794px
-const CANVAS_HEIGHT = Math.round(PDF_HEIGHT_MM * MM_TO_PX); // 2159px
-
-canvas.width = CANVAS_WIDTH;
-canvas.height = CANVAS_HEIGHT;
-canvas.style.width = '100%';
-canvas.style.height = 'auto';
-
-// Sliders in mm and pt
-nameYSlider.min = 0;
-nameYSlider.max = PDF_HEIGHT_MM;
-nameYSlider.step = 0.1;
-detailsYSlider.min = 0;
-detailsYSlider.max = PDF_HEIGHT_MM;
-detailsYSlider.step = 0.1;
-nameSizeSlider.min = 10;
-nameSizeSlider.max = 80;
-nameSizeSlider.step = 1;
-detailsSizeSlider.min = 10;
-detailsSizeSlider.max = 40;
-detailsSizeSlider.step = 1;
-
-// Default values
-nameY = 111.8;
-detailsY = 130.1;
-nameSize = 36;
-detailsSize = 18;
-nameYSlider.value = nameY;
-detailsYSlider.value = detailsY;
-nameSizeSlider.value = nameSize;
-detailsSizeSlider.value = detailsSize;
-nameYVal.textContent = nameY;
-detailsYVal.textContent = detailsY;
-nameSizeVal.textContent = nameSize;
-detailsSizeVal.textContent = detailsSize;
-
-function ptToPx(pt) {
-    // 1pt = 1/72 inch; 1 inch = 25.4mm; 1mm = 10px
-    // px = pt * (25.4/72) * MM_TO_PX
-    return pt * (25.4/72) * MM_TO_PX;
-}
-
-function mmToPx(mm) {
-    return mm * MM_TO_PX;
-}
-
 function parseCSV(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
     lines.shift(); // Remove header
@@ -241,125 +192,80 @@ function parseCSV(text) {
     }).filter(r => r.fullName);
 }
 
-function drawDetailsBullets(ctx, details, fontPx, yPx) {
-    // 0.25 inch = 6.35mm; MM_TO_PX = 10; so 63.5px
-    const spacePx = 6.35 * MM_TO_PX;
-    const bullet = '|';
-    let x = CANVAS_WIDTH/2;
-    // Measure total width
-    let totalWidth = 0;
-    ctx.font = `bold ${fontPx}px 'Poppins', Arial, sans-serif`;
-    for (let i = 0; i < details.length; ++i) {
-        if (i > 0) totalWidth += spacePx + ctx.measureText(bullet).width + spacePx;
-        totalWidth += ctx.measureText(details[i]).width;
+function renderCertificateHTML(record, options = {}) {
+    if (!bgImg) return '';
+    const { opacity = 1, showBbox = showBoundingBoxes, bboxColor = boundingBoxColor, draggable = false, idx = null, showGreenBoxes = false } = options;
+    // Build details HTML with pipes
+    let details_html = '';
+    if (record.details && record.details.length) {
+        record.details.forEach((d, i) => {
+            if (i > 0) details_html += '<span class="pipe" style="' + (showGreenBoxes ? 'color:rgba(0,0,0,0);' : '') + '">|</span>';
+            details_html += '<span style="color:' + (showGreenBoxes ? 'rgba(0,0,0,0)' : '#1c355e') + ';font-weight:bold;">' + escapeHtml(d) + '</span>';
+        });
     }
-    // Start at left
-    x -= totalWidth/2;
-    for (let i = 0; i < details.length; ++i) {
-        if (i > 0) {
-            x += spacePx;
-            ctx.save();
-            ctx.fillStyle = '#aa1f2e'; // Red bullet/pipe
-            ctx.fillText(bullet, x, yPx);
-            ctx.restore();
-            x += ctx.measureText(bullet).width;
-            x += spacePx;
-        }
-        ctx.save();
-        ctx.fillStyle = '#1c355e'; // Details text color
-        ctx.fillText(details[i], x, yPx);
-        ctx.restore();
-        x += ctx.measureText(details[i]).width;
+    // Bounding box logic
+    let nameBox = '';
+    let detailsBox = '';
+    if (showBbox && !showGreenBoxes) {
+        nameBox = `<div class="bbox" data-type="name" style="position:absolute;left:50%;top:${nameY}mm;transform:translateX(-50%);z-index:2;pointer-events:none;border:2px dashed ${bboxColor};background:${bboxColor}10;width:max-content;max-width:100%;padding:2px 8px;opacity:0.5;"></div>`;
+        detailsBox = `<div class="bbox" data-type="details" style="position:absolute;left:50%;top:${detailsY}mm;transform:translateX(-50%);z-index:2;pointer-events:none;border:2px dashed ${bboxColor};background:${bboxColor}10;width:max-content;max-width:100%;padding:2px 8px;opacity:0.5;"></div>`;
     }
+    // Main HTML
+    return `
+        <img src="${bgImg.src}" class="bg" style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;object-fit:cover;opacity:${opacity};" />
+        ${nameBox}
+        ${detailsBox}
+        <div class="name" data-type="name" style="position:absolute;left:50%;top:${nameY}mm;transform:translateX(-50%);color:${showGreenBoxes ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${nameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;z-index:3;text-align:center;width:100%;cursor:${draggable?'grab':'default'};opacity:${opacity};background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : opacity};">${escapeHtml(record.fullName)}</div>
+        <div class="details" data-type="details" style="position:absolute;left:50%;top:${detailsY}mm;transform:translateX(-50%);font-size:${detailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;z-index:3;text-align:center;width:100%;cursor:${draggable?'grab':'default'};opacity:${opacity};background:${showGreenBoxes ? 'green' : 'transparent'};border:${showGreenBoxes ? '5px dashed black' : 'none'};padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:${showGreenBoxes ? '0.5' : opacity};">${details_html}</div>
+        <style>
+        .pipe { color:#aa1f2e;font-weight:bold;padding:0 10mm;font-size:inherit; }
+        </style>
+    `;
 }
-
-function drawBoundingBox(x, y, w, h, color) {
-    // Draw faint green background (5% opacity)
-    ctx.save();
-    ctx.globalAlpha = 0.05;
-    ctx.fillStyle = '#00c853';
-    ctx.fillRect(x, y, w, h);
-    ctx.globalAlpha = 1.0;
-    // Draw border
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 5;
-    ctx.setLineDash([2,2]);
-    ctx.strokeRect(x, y, w, h);
-    ctx.setLineDash([]);
-    ctx.restore();
+function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, function(tag) {
+        const chars = {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'};
+        return chars[tag] || tag;
+    });
 }
-
 function updatePreview() {
     if (!bgImg || !records.length) return;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
+    let html = '';
     if (currentIdx === 0) {
-        ctx.globalAlpha = 0.01;
-        for (let i = 0; i < records.length; ++i) {
-            // Name
-            ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
-            ctx.fillStyle = '#aa1f2e';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'alphabetic';
-            ctx.fillText(records[i].fullName, CANVAS_WIDTH/2, mmToPx(nameY));
-            // Details
-            ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
-            ctx.textAlign = 'left';
-            ctx.textBaseline = 'alphabetic';
-            drawDetailsBullets(ctx, records[i].details, ptToPx(detailsSize), mmToPx(detailsY));
-            if (showBoundingBoxes) {
-                // Name bbox
-                ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
-                let nameYpx = mmToPx(nameY);
-                let nameText = records[i].fullName;
-                let nameWidth = ctx.measureText(nameText).width;
-                let nameHeight = ptToPx(nameSize);
-                drawBoundingBox(CANVAS_WIDTH/2 - nameWidth/2, nameYpx - nameHeight, nameWidth, nameHeight, boundingBoxColor);
-                // Details bbox
-                ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
-                let detailsYpx = mmToPx(detailsY);
-                let detailsText = records[i].details.join('      |      ');
-                let detailsWidth = ctx.measureText(detailsText).width;
-                let detailsHeight = ptToPx(detailsSize);
-                drawBoundingBox(CANVAS_WIDTH/2 - detailsWidth/2, detailsYpx - detailsHeight, detailsWidth, detailsHeight, boundingBoxColor);
+        // Find the record with the longest name
+        let maxIdx = 0;
+        let maxLen = 0;
+        records.forEach((rec, i) => {
+            if (rec.fullName.length > maxLen) {
+                maxLen = rec.fullName.length;
+                maxIdx = i;
             }
-        }
-        ctx.globalAlpha = 1.0;
+        });
+        // Render both the invisible bounding box AND visible preview for the longest name
+        html = renderCertificateHTML(records[maxIdx], {
+            opacity: 0,
+            showBbox: showBoundingBoxes,
+            draggable: false,
+            idx: maxIdx,
+            showGreenBoxes: true
+        });
+        // Add the visible preview below
+        html += renderCertificateHTML(records[maxIdx], {
+            opacity: 1,
+            showBbox: showBoundingBoxes,
+            draggable: true,
+            idx: maxIdx
+        });
     } else {
-        // Normal single record
-        ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
-        ctx.fillStyle = '#aa1f2e';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'alphabetic';
-        ctx.fillText(records[currentIdx-1].fullName, CANVAS_WIDTH/2, mmToPx(nameY));
-        ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
-        ctx.fillStyle = '#1c355e';
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'alphabetic';
-        drawDetailsBullets(ctx, records[currentIdx-1].details, ptToPx(detailsSize), mmToPx(detailsY));
-        if (showBoundingBoxes) {
-            // Name bbox
-            ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
-            let nameYpx = mmToPx(nameY);
-            let nameText = records[currentIdx-1].fullName;
-            let nameWidth = ctx.measureText(nameText).width;
-            let nameHeight = ptToPx(nameSize);
-            drawBoundingBox(CANVAS_WIDTH/2 - nameWidth/2, nameYpx - nameHeight, nameWidth, nameHeight, boundingBoxColor);
-            // Details bbox
-            ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
-            let detailsYpx = mmToPx(detailsY);
-            let detailsText = records[currentIdx-1].details.join('      |      ');
-            let detailsWidth = ctx.measureText(detailsText).width;
-            let detailsHeight = ptToPx(detailsSize);
-            drawBoundingBox(CANVAS_WIDTH/2 - detailsWidth/2, detailsYpx - detailsHeight, detailsWidth, detailsHeight, boundingBoxColor);
-        }
+        html = renderCertificateHTML(records[currentIdx], { opacity: 1, showBbox: showBoundingBoxes, draggable: true, idx: currentIdx });
     }
-    // Slide indicator
-    slideIndicator.textContent = `${currentIdx}/${records.length}`;
+    certPreview.innerHTML = html;
+    slideIndicator.textContent = `${currentIdx+1}/${records.length}`;
     prevBtn.disabled = currentIdx === 0;
-    nextBtn.disabled = currentIdx === records.length;
+    nextBtn.disabled = currentIdx === records.length-1;
+    // Add drag listeners
+    addDragListeners();
 }
-
 csvInput.addEventListener('change', e => {
     const file = e.target.files[0];
     if (!file) return;
@@ -375,9 +281,8 @@ csvInput.addEventListener('change', e => {
     };
     reader.readAsText(file);
 });
-
 bgInput.addEventListener('change', e => {
-            const file = e.target.files[0];
+    const file = e.target.files[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = evt => {
@@ -393,7 +298,6 @@ bgInput.addEventListener('change', e => {
     };
     reader.readAsDataURL(file);
 });
-
 prevBtn.addEventListener('click', () => {
     if (currentIdx > 0) {
         currentIdx--;
@@ -401,12 +305,11 @@ prevBtn.addEventListener('click', () => {
     }
 });
 nextBtn.addEventListener('click', () => {
-    if (currentIdx < records.length) {
+    if (currentIdx < records.length-1) {
         currentIdx++;
         updatePreview();
     }
 });
-
 nameYSlider.addEventListener('input', function() {
     nameY = parseFloat(this.value);
     nameYVal.textContent = this.value;
@@ -427,71 +330,6 @@ detailsSizeSlider.addEventListener('input', function() {
     detailsSizeVal.textContent = this.value;
     updatePreview();
 });
-
-canvas.addEventListener('mousedown', function(e) {
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-    // Name bounding box
-    ctx.font = `bold ${ptToPx(nameSize)}px 'Poppins', Arial, sans-serif`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'alphabetic';
-    let nameYpx = mmToPx(nameY);
-    let nameText = records[currentIdx].fullName;
-    let nameWidth = ctx.measureText(nameText).width;
-    let nameHeight = ptToPx(nameSize);
-    let nameBox = {
-        left: CANVAS_WIDTH/2 - nameWidth/2,
-        right: CANVAS_WIDTH/2 + nameWidth/2,
-        top: nameYpx - nameHeight,
-        bottom: nameYpx
-    };
-    if (x >= nameBox.left && x <= nameBox.right && y >= nameBox.top && y <= nameBox.bottom) {
-        dragging = 'name';
-        dragOffsetY = y - nameYpx;
-        return;
-    }
-    // Details bounding box
-    ctx.font = `bold ${ptToPx(detailsSize)}px 'Poppins', Arial, sans-serif`;
-    let detailsYpx = mmToPx(detailsY);
-    let detailsText = records[currentIdx].details.join('      |      ');
-    let detailsWidth = ctx.measureText(detailsText).width;
-    let detailsHeight = ptToPx(detailsSize);
-    let detailsBox = {
-        left: CANVAS_WIDTH/2 - detailsWidth/2,
-        right: CANVAS_WIDTH/2 + detailsWidth/2,
-        top: detailsYpx - detailsHeight,
-        bottom: detailsYpx
-    };
-    if (x >= detailsBox.left && x <= detailsBox.right && y >= detailsBox.top && y <= detailsBox.bottom) {
-        dragging = 'details';
-        dragOffsetY = y - detailsYpx;
-        return;
-    }
-});
-
-document.addEventListener('mousemove', function(e) {
-    if (!dragging) return;
-    const rect = canvas.getBoundingClientRect();
-    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-    let newYmm = (y - dragOffsetY) / MM_TO_PX;
-    newYmm = Math.max(0, Math.min(PDF_HEIGHT_MM, newYmm));
-    if (dragging === 'name') {
-        nameY = newYmm;
-        nameYSlider.value = nameY;
-        nameYVal.textContent = nameY.toFixed(1);
-    } else if (dragging === 'details') {
-        detailsY = newYmm;
-        detailsYSlider.value = detailsY;
-        detailsYVal.textContent = detailsY.toFixed(1);
-    }
-    updatePreview();
-});
-
-document.addEventListener('mouseup', function() {
-    dragging = null;
-});
-
 showBboxCheckbox.addEventListener('change', function() {
     showBoundingBoxes = this.checked;
     bboxColorInput.disabled = !this.checked;
@@ -501,8 +339,6 @@ bboxColorInput.addEventListener('input', function() {
     boundingBoxColor = this.value;
     updatePreview();
 });
-
-// --- PDF Generation ---
 document.getElementById('cert-form').addEventListener('submit', function(e) {
     e.preventDefault();
     if (!records.length || !bgImg) return;
@@ -539,7 +375,60 @@ document.getElementById('cert-form').addEventListener('submit', function(e) {
         generateBtn.disabled = false;
         generateBtn.textContent = 'Generate PDF';
     });
-        });
+});
+
+function addDragListeners() {
+    const nameDiv = certPreview.querySelector('.name');
+    const detailsDiv = certPreview.querySelector('.details');
+    if (nameDiv) {
+        nameDiv.addEventListener('mousedown', startDrag('name'));
+        nameDiv.addEventListener('touchstart', startDrag('name'));
+    }
+    if (detailsDiv) {
+        detailsDiv.addEventListener('mousedown', startDrag('details'));
+        detailsDiv.addEventListener('touchstart', startDrag('details'));
+    }
+}
+function startDrag(type) {
+    return function(e) {
+        e.preventDefault();
+        dragging = type;
+        let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const previewRect = certPreview.getBoundingClientRect();
+        dragOffsetY = clientY - previewRect.top;
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('touchmove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag);
+    };
+}
+function onDrag(e) {
+    if (!dragging) return;
+    let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const wrapper = document.getElementById('certificate-preview-wrapper');
+    const rect = wrapper.getBoundingClientRect();
+    let yPx = clientY - rect.top;
+    // Convert px to mm
+    let mm = yPx / rect.height * 215.9;
+    mm = Math.max(0, Math.min(215.9, mm));
+    if (dragging === 'name') {
+        nameY = mm;
+        nameYSlider.value = nameY;
+        nameYVal.textContent = nameY.toFixed(1);
+    } else if (dragging === 'details') {
+        detailsY = mm;
+        detailsYSlider.value = detailsY;
+        detailsYVal.textContent = detailsY.toFixed(1);
+    }
+    updatePreview();
+}
+function stopDrag() {
+    dragging = null;
+    document.removeEventListener('mousemove', onDrag);
+    document.removeEventListener('touchmove', onDrag);
+    document.removeEventListener('mouseup', stopDrag);
+    document.removeEventListener('touchend', stopDrag);
+}
     </script>
 </body>
 </html> 
