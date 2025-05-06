@@ -70,13 +70,14 @@ $pdf = new CertificatePDF('L', 'mm', array(279.4, 215.9)); // Letter landscape
 $pdf->SetAutoPageBreak(false);
 $pdf->SetMargins(0, 0, 0);
 $pdf->AddFont('Poppins', 'B', 'poppins.php');
+$pdf->AddFont('Poppins-Bold', '', 'Poppins-Bold.php');
 $pdf->setBg($bg_tmp_with_ext);
 
 foreach ($records as $rec) {
     $pdf->AddPage();
     $w = $pdf->GetPageWidth();
     // Name
-    $pdf->SetFont('Poppins', 'B', $name_size_pt);
+    $pdf->SetFont('Poppins-Bold', '', $name_size_pt);
     $pdf->SetTextColor(170, 31, 46);
     $name = $rec['fullName'];
     $name_w = $pdf->GetStringWidth($name);
@@ -86,7 +87,7 @@ foreach ($records as $rec) {
     // Details
     $details = array_filter($rec['details']);
     if ($details) {
-        $pdf->SetFont('Poppins', 'B', $details_size_pt);
+        $pdf->SetFont('Poppins-Bold', '', $details_size_pt);
         $pdf->SetTextColor(28, 53, 94);
         $bullet = '•';
         $space = 6.35; // mm
@@ -102,9 +103,9 @@ foreach ($records as $rec) {
         foreach ($details as $i => $d) {
             if ($i > 0) {
                 $pdf->Cell($space, 10, '', 0, 0, 'L');
-                $pdf->SetTextColor(170, 31, 46);
+                $pdf->SetTextColor(170, 31, 46); // Red bullet
                 $pdf->Cell($pdf->GetStringWidth($bullet), 10, $bullet, 0, 0, 'L');
-                $pdf->SetTextColor(28, 53, 94);
+                $pdf->SetTextColor(28, 53, 94); // Restore details text color
                 $pdf->Cell($space, 10, '', 0, 0, 'L');
             }
             $pdf->Cell($pdf->GetStringWidth($d), 10, $d, 0, 0, 'L');
