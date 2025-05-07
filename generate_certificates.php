@@ -118,6 +118,7 @@ try {
             z-index: 0; 
             object-fit: fill;
             display: block;
+            background-image: url("' . $bg_url . '");
             background-image-resize: 6;
         }
         .name {
