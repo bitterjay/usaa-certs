@@ -64,6 +64,8 @@ $mpdf = new \Mpdf\Mpdf([
     'margin_bottom' => 0,
     'margin_header' => 0,
     'margin_footer' => 0,
+    'dpi' => 150,
+    'img_dpi' => 150,
     'fontDir' => array_merge($fontDirs, [__DIR__ . '/fonts']),
     'fontdata' => [
         'poppins' => [
@@ -108,14 +110,13 @@ try {
             height: 100%;
             position: relative;
         }
-        .bg { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            z-index: 0; 
-            object-fit: fill;
+        img.certificate-bg {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 11in;
+            height: 8.5in;
+            z-index: 1;
             display: block;
         }
         .name {
@@ -129,7 +130,7 @@ try {
             font-family: "Poppins", Arial, sans-serif;
             font-weight: bold;
             white-space: nowrap;
-            z-index: 1;
+            z-index: 2;
             text-align: center;
             width: 100%;
             line-height: 1;
@@ -144,7 +145,7 @@ try {
             font-family: "Poppins", Arial, sans-serif;
             font-weight: bold;
             white-space: nowrap;
-            z-index: 1;
+            z-index: 2;
             text-align: center;
             width: 100%;
             line-height: 1;
@@ -161,7 +162,7 @@ try {
             vertical-align: middle;
         }
         </style></head><body>
-        <img src="' . $bg_url . '" class="bg" />
+        <img src="' . $bg_url . '" class="certificate-bg" />
         <div class="name">' . htmlspecialchars($rec['fullName']) . '</div>
         <div class="details">' . $details_html . '</div>
     </body></html>';
