@@ -20,11 +20,22 @@
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            padding: 32px 24px 32px 24px;
+            
         }
+
+        .header-container {
+            display:flex;
+            flex-direction:column;
+            padding: 32px 24px 32px 24px;
+            background-color: #1c355e;
+        }
+
         h1 {
             text-align: center;
-            color: #1c355e;
+            color:rgb(255, 255, 255);
+        }
+        form {
+            padding: 32px 24px 32px 24px;
         }
         .form-group {
             margin-bottom: 20px;
@@ -101,7 +112,9 @@
 </head>
 <body>
     <div class="container">
-    <h1>USA Archery - Bulk Certificate Generator</h1>
+        <div class="header-container">
+            <h1>USA Archery - Bulk Certificate Generator</h1>
+        </div>
     <form id="cert-form" enctype="multipart/form-data">
         <div class="form-group">
             <label for="csv-input">Upload CSV File</label>
