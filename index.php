@@ -124,54 +124,53 @@
         <div class="description-container">
             <p>Upload a CSV file with athlete names and details, and a background image. The generator will create a PDF with certificates for each athlete.</p>
         </div>
-    </div>
-    <form id="cert-form" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="csv-input">Upload CSV File</label>
-            <input type="file" id="csv-input" name="csv" accept=".csv" required>
-        </div>
+        <form id="cert-form" enctype="multipart/form-data">
             <div class="form-group">
-            <label for="bg-input">Upload Background Image (PNG)</label>
-            <input type="file" id="bg-input" name="background" accept="image/png" required>
-        </div>
-        <div id="preview-area" style="display:none;">
-            <div id="certificate-preview-wrapper" style="width:100%;max-width:900px;margin:0 auto;position:relative;aspect-ratio:279.4/215.9;background:#eee;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
-                <div id="certificate-preview" style="width:100%;height:100%;position:absolute;left:0;top:0;"></div>
+                <label for="csv-input">Upload CSV File</label>
+                <input type="file" id="csv-input" name="csv" accept=".csv" required>
             </div>
-            <div class="controls">
-                <button type="button" id="prev-btn">&lt; Prev</button>
-                <span id="slide-indicator">1/1</span>
-                <button type="button" id="next-btn">Next &gt;</button>
+                <div class="form-group">
+                <label for="bg-input">Upload Background Image (PNG)</label>
+                <input type="file" id="bg-input" name="background" accept="image/png" required>
             </div>
-            <div class="form-group" style="display:flex;align-items:center;gap:12px;justify-content:center;">
-                <input type="checkbox" id="show-bbox" checked>
-                <label for="show-bbox" style="margin:0;">Show bounding boxes</label>
-                <input type="color" id="bbox-color" value="#00c853" style="width:32px;height:32px;border:none;cursor:pointer;">
+            <div id="preview-area" style="display:none;">
+                <div id="certificate-preview-wrapper" style="width:100%;max-width:900px;margin:0 auto;position:relative;aspect-ratio:279.4/215.9;background:#eee;border-radius:6px;box-shadow:0 1px 4px rgba(0,0,0,0.08);overflow:hidden;">
+                    <div id="certificate-preview" style="width:100%;height:100%;position:absolute;left:0;top:0;"></div>
+                </div>
+                <div class="controls">
+                    <button type="button" id="prev-btn">&lt; Prev</button>
+                    <span id="slide-indicator">1/1</span>
+                    <button type="button" id="next-btn">Next &gt;</button>
+                </div>
+                <div class="form-group" style="display:flex;align-items:center;gap:12px;justify-content:center;">
+                    <input type="checkbox" id="show-bbox" checked>
+                    <label for="show-bbox" style="margin:0;">Show bounding boxes</label>
+                    <input type="color" id="bbox-color" value="#00c853" style="width:32px;height:32px;border:none;cursor:pointer;">
+                </div>
+                <div class="slider-group">
+                    <label for="name-y">Name Y Position</label>
+                    <input type="range" id="name-y" min="0" max="215.9" step="0.1" value="78.9">
+                    <span id="name-y-val">78.9</span>
+                </div>
+                <div class="slider-group">
+                    <label for="details-y">Details Y Position</label>
+                    <input type="range" id="details-y" min="0" max="215.9" step="0.1" value="94.4">
+                    <span id="details-y-val">94.4</span>
+                </div>
+                <div class="slider-group">
+                    <label for="name-size">Name Font Size</label>
+                    <input type="range" id="name-size" min="10" max="80" step="1" value="27">
+                    <span id="name-size-val">27</span>
+                </div>
+                <div class="slider-group">
+                    <label for="details-size">Details Font Size</label>
+                    <input type="range" id="details-size" min="10" max="40" step="1" value="18">
+                    <span id="details-size-val">18</span>
+                </div>
             </div>
-            <div class="slider-group">
-                <label for="name-y">Name Y Position</label>
-                <input type="range" id="name-y" min="0" max="215.9" step="0.1" value="78.9">
-                <span id="name-y-val">78.9</span>
-            </div>
-            <div class="slider-group">
-                <label for="details-y">Details Y Position</label>
-                <input type="range" id="details-y" min="0" max="215.9" step="0.1" value="94.4">
-                <span id="details-y-val">94.4</span>
-            </div>
-            <div class="slider-group">
-                <label for="name-size">Name Font Size</label>
-                <input type="range" id="name-size" min="10" max="80" step="1" value="27">
-                <span id="name-size-val">27</span>
-            </div>
-            <div class="slider-group">
-                <label for="details-size">Details Font Size</label>
-                <input type="range" id="details-size" min="10" max="40" step="1" value="18">
-                <span id="details-size-val">18</span>
-            </div>
-        </div>
-        <button type="submit" id="generate-btn" disabled>Generate PDF</button>
-    </form>
-    <div class="footer">&copy; USA Archery Certificate Generator</div>
+            <button type="submit" id="generate-btn" disabled>Generate PDF</button>
+        </form>
+        <div class="footer">&copy; USA Archery Certificate Generator</div>
     </div>
     <script>
 // --- State ---
