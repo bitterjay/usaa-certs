@@ -125,7 +125,7 @@ try {
             top: ' . $name_y . 'mm;
             margin: 0 auto;
             color: #aa1f2e;
-            font-size: ' . ($name_size * 0.75) . 'pt;
+            font-size: ' . ($name_size * 1.35) . 'pt;
             font-family: "Poppins", Arial, sans-serif;
             font-weight: bold;
             white-space: nowrap;
@@ -140,7 +140,7 @@ try {
             right: 0;
             top: ' . $details_y . 'mm;
             margin: 0 auto;
-            font-size: ' . ($details_size * 0.75) . 'pt;
+            font-size: ' . ($details_size * 1.35) . 'pt;
             font-family: "Poppins", Arial, sans-serif;
             font-weight: bold;
             white-space: nowrap;
