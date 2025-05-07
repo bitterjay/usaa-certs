@@ -7,4 +7,5 @@ composer.lock
 .idea/
 .vscode/
 sftp-config.sh
-sftp_commands.exp 
+sftp_commands.exp
+.cursor/rules/ 
