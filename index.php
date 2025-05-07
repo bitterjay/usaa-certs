@@ -20,7 +20,7 @@
             background: #fff;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            
+            overflow: hidden;
         }
 
         .header-container {
@@ -36,6 +36,11 @@
         }
         form {
             padding: 32px 24px 32px 24px;
+        }
+        #cert-form {
+            display:grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
         }
         .form-group {
             margin-bottom: 20px;
@@ -113,7 +118,7 @@
 <body>
     <div class="container">
         <div class="header-container">
-            <h1>USA Archery - Bulk Certificate Generator</h1>
+            <h1>USA ARCHERY<br>Bulk Certificate Generator</h1>
         </div>
     <form id="cert-form" enctype="multipart/form-data">
         <div class="form-group">
