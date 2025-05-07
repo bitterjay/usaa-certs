@@ -108,17 +108,10 @@ try {
             width: 100%;
             height: 100%;
             position: relative;
-        }
-        .bg { 
-            position: absolute; 
-            left: 0; 
-            top: 0; 
-            width: 100%; 
-            height: 100%; 
-            z-index: 0; 
-            object-fit: fill;
-            display: block;
             background-image: url("' . $bg_url . '");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
             background-image-resize: 6;
         }
         .name {
@@ -163,7 +156,7 @@ try {
             display: inline-block;
             vertical-align: middle;
         }
-        </style></head><body class="bg">
+        </style></head><body>
         <div class="name">' . htmlspecialchars($rec['fullName']) . '</div>
         <div class="details">' . $details_html . '</div>
     </body></html>';
