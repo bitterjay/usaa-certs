@@ -180,7 +180,7 @@ const generateBtn = document.getElementById('generate-btn');
 const showBboxCheckbox = document.getElementById('show-bbox');
 const bboxColorInput = document.getElementById('bbox-color');
 
-// Initialize slider values
+// Initialize slider values and add event listeners
 nameYSlider.value = nameY;
 detailsYSlider.value = detailsY;
 nameSizeSlider.value = nameSize;
@@ -189,6 +189,39 @@ nameYVal.textContent = nameY;
 detailsYVal.textContent = detailsY;
 nameSizeVal.textContent = nameSize;
 detailsSizeVal.textContent = detailsSize;
+
+// Add input event listeners for sliders
+nameYSlider.addEventListener('input', function() {
+    nameY = parseFloat(this.value);
+    nameYVal.textContent = nameY.toFixed(1);
+    if (records.length && bgImg) {
+        updatePreview();
+    }
+});
+
+detailsYSlider.addEventListener('input', function() {
+    detailsY = parseFloat(this.value);
+    detailsYVal.textContent = detailsY.toFixed(1);
+    if (records.length && bgImg) {
+        updatePreview();
+    }
+});
+
+nameSizeSlider.addEventListener('input', function() {
+    nameSize = parseInt(this.value, 10);
+    nameSizeVal.textContent = nameSize;
+    if (records.length && bgImg) {
+        updatePreview();
+    }
+});
+
+detailsSizeSlider.addEventListener('input', function() {
+    detailsSize = parseInt(this.value, 10);
+    detailsSizeVal.textContent = detailsSize;
+    if (records.length && bgImg) {
+        updatePreview();
+    }
+});
 
 function parseCSV(text) {
     const lines = text.split(/\r?\n/).filter(l => l.trim());
@@ -346,26 +379,6 @@ nextBtn.addEventListener('click', () => {
         currentIdx++;
         updatePreview();
     }
-});
-nameYSlider.addEventListener('input', function() {
-    nameY = parseFloat(this.value);
-    nameYVal.textContent = this.value;
-    updatePreview();
-});
-detailsYSlider.addEventListener('input', function() {
-    detailsY = parseFloat(this.value);
-    detailsYVal.textContent = this.value;
-    updatePreview();
-});
-nameSizeSlider.addEventListener('input', function() {
-    nameSize = parseInt(this.value, 10);
-    nameSizeVal.textContent = this.value;
-    updatePreview();
-});
-detailsSizeSlider.addEventListener('input', function() {
-    detailsSize = parseInt(this.value, 10);
-    detailsSizeVal.textContent = this.value;
-    updatePreview();
 });
 showBboxCheckbox.addEventListener('change', function() {
     showBoundingBoxes = this.checked;
