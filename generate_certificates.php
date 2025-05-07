@@ -99,7 +99,7 @@ try {
         @page {
             margin: 0;
             padding: 0;
-            size: 279.4mm 215.9mm landscape;
+            size: 11in 8.5in landscape;
         }
         body { 
             margin: 0; 
