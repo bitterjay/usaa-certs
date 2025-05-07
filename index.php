@@ -103,6 +103,7 @@
             margin-top: 24px;
             width: 100%;
             padding: 14px 0;
+            grid-column: span 2;
         }
         #generate-btn:disabled {
             background: #ccc;
@@ -120,6 +121,10 @@
         <div class="header-container">
             <h1>USA ARCHERY<br>Bulk Certificate Generator</h1>
         </div>
+        <div class="description-container">
+            <p>Upload a CSV file with athlete names and details, and a background image. The generator will create a PDF with certificates for each athlete.</p>
+        </div>
+    </div>
     <form id="cert-form" enctype="multipart/form-data">
         <div class="form-group">
             <label for="csv-input">Upload CSV File</label>
