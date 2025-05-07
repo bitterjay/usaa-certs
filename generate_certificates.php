@@ -85,7 +85,7 @@ try {
             $details_html = '';
             foreach ($details as $i => $d) {
                 if ($i > 0) {
-                    $details_html .= '<span class="pipe">|</span>';
+                    $details_html .= '<span class="pipe">&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;</span>';
                 }
                 $details_html .= '<span style="color:#1c355e;font-weight:bold;">' . htmlspecialchars($d) . '</span>';
             }
@@ -99,6 +99,7 @@ try {
         @page {
             margin: 0;
             padding: 0;
+            size: 279.4mm 215.9mm landscape;
         }
         body { 
             margin: 0; 
@@ -124,13 +125,14 @@ try {
             top: ' . $name_y . 'mm;
             margin: 0 auto;
             color: #aa1f2e;
-            font-size: ' . $name_size . 'pt;
+            font-size: ' . ($name_size * 0.75) . 'pt;
             font-family: "Poppins", Arial, sans-serif;
             font-weight: bold;
             white-space: nowrap;
             z-index: 1;
             text-align: center;
             width: 100%;
+            line-height: 1;
         }
         .details {
             position: absolute;
@@ -138,13 +140,14 @@ try {
             right: 0;
             top: ' . $details_y . 'mm;
             margin: 0 auto;
-            font-size: ' . $details_size . 'pt;
+            font-size: ' . ($details_size * 0.75) . 'pt;
             font-family: "Poppins", Arial, sans-serif;
             font-weight: bold;
             white-space: nowrap;
             z-index: 1;
             text-align: center;
             width: 100%;
+            line-height: 1;
         }
         body, .name, .details {
             font-family: "Poppins", Arial, sans-serif !important;
@@ -152,8 +155,10 @@ try {
         .pipe {
             color: #aa1f2e;
             font-weight: bold;
-            padding: 0 10mm;
+            padding: 0 2mm;
             font-size: inherit;
+            display: inline-block;
+            vertical-align: middle;
         }
         </style></head><body>
         <img src="' . $bg_url . '" class="bg" />
