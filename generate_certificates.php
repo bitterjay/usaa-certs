@@ -162,8 +162,7 @@ try {
             display: inline-block;
             vertical-align: middle;
         }
-        </style></head><body>
-        <img src="' . $bg_url . '" class="bg" />
+        </style></head><body class="bg">
         <div class="name">' . htmlspecialchars($rec['fullName']) . '</div>
         <div class="details">' . $details_html . '</div>
     </body></html>';
