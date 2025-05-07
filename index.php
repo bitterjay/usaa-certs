@@ -279,14 +279,38 @@ function renderCertificateHTML(record, options = {}) {
         <img src="${bgImg.src}" class="bg" style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;object-fit:cover;opacity:${opacity};" />
         ${isPreviewSlide ? `<div style="position:absolute;left:20px;top:20px;background:#aa1f2e;color:white;padding:8px 16px;border-radius:4px;font-family:'Poppins',Arial,sans-serif;font-weight:bold;z-index:3;">PREVIEW</div>` : ''}
         <div class="bbox name-box" data-type="name" style="position:absolute;left:50%;top:${scaledNameY}px;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};pointer-events:all;">
-            <div class="name" style="color:${isPreviewSlide ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${scaledNameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${isPreviewSlide ? 'rgba(0,0,0,0)' : (showGreenBoxes ? 'green' : 'transparent')};border:none;padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:1;pointer-events:none;">${escapeHtml(record.fullName)}</div>
+            <div class="name" style="color:${isPreviewSlide ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${scaledNameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${isPreviewSlide ? 'rgba(0,0,0,0)' : (showGreenBoxes ? 'green' : 'transparent')};border:none;padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:1;pointer-events:none;position:relative;">${escapeHtml(record.fullName)}</div>
         </div>
         <div class="bbox details-box" data-type="details" style="position:absolute;left:50%;top:${scaledDetailsY}px;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};pointer-events:all;">
-            <div class="details" style="font-size:${scaledDetailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${isPreviewSlide ? 'rgba(0,0,0,0)' : (showGreenBoxes ? 'green' : 'transparent')};border:none;padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:1;pointer-events:none;">${details_html}</div>
+            <div class="details" style="font-size:${scaledDetailsSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${isPreviewSlide ? 'rgba(0,0,0,0)' : (showGreenBoxes ? 'green' : 'transparent')};border:none;padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:1;pointer-events:none;position:relative;">${details_html}</div>
         </div>
         <style>
         .pipe { color:#aa1f2e;font-weight:bold;padding:0 10mm;font-size:inherit;pointer-events:none; }
         .bbox { width:max-content;max-width:100%; }
+        ${isPreviewSlide ? `
+        .name::before {
+            content: "ATHLETE NAME";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #aa1f2e;
+            opacity: 0.5;
+            font-size: ${scaledNameSize}pt;
+            white-space: nowrap;
+        }
+        .details::before {
+            content: "ATHLETE DETAILS";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            color: #1c355e;
+            opacity: 0.5;
+            font-size: ${scaledDetailsSize}pt;
+            white-space: nowrap;
+        }
+        ` : ''}
         </style>
     `;
 }
