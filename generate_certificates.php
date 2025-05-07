@@ -96,13 +96,33 @@ try {
             src: url("fonts/Poppins-Bold.ttf") format("truetype");
             font-weight: bold;
         }
-        body { margin: 0; padding: 0; }
-        .bg { position: absolute; left: 0; top: 0; width: 279.4mm; height: 215.9mm; z-index: 0; object-fit: cover; }
+        @page {
+            margin: 0;
+            padding: 0;
+        }
+        body { 
+            margin: 0; 
+            padding: 0;
+            width: 279.4mm;
+            height: 215.9mm;
+            position: relative;
+        }
+        .bg { 
+            position: absolute; 
+            left: 0; 
+            top: 0; 
+            width: 279.4mm; 
+            height: 215.9mm; 
+            z-index: 0; 
+            object-fit: cover;
+            display: block;
+        }
         .name {
             position: absolute;
-            left: 50%;
+            left: 0;
+            right: 0;
             top: ' . $name_y . 'mm;
-            transform: translateX(-50%);
+            margin: 0 auto;
             color: #aa1f2e;
             font-size: ' . $name_size . 'pt;
             font-family: "Poppins", Arial, sans-serif;
@@ -114,9 +134,10 @@ try {
         }
         .details {
             position: absolute;
-            left: 50%;
+            left: 0;
+            right: 0;
             top: ' . $details_y . 'mm;
-            transform: translateX(-50%);
+            margin: 0 auto;
             font-size: ' . $details_size . 'pt;
             font-family: "Poppins", Arial, sans-serif;
             font-weight: bold;
