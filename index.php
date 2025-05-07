@@ -30,6 +30,10 @@
             background-color: #1c355e;
         }
 
+        .description-container{
+            padding: 32px 24px 32px 24px;
+        }
+
         h1 {
             text-align: center;
             color:rgb(255, 255, 255);
@@ -123,6 +127,22 @@
         </div>
         <div class="description-container">
             <p>Upload a CSV file with athlete names and details, and a background image. The generator will create a PDF with certificates for each athlete.</p>
+        <div class="csv-format-info">
+            <h3>CSV Format Instructions</h3>
+            <p>Your CSV file should be formatted as follows:</p>
+            <ul>
+                <li>First row should be a header row (will be skipped)</li>
+                <li>Each subsequent row represents one certificate</li>
+                <li>Column 1: First Name</li>
+                <li>Column 2: Last Name</li>
+                <li>Columns 3-5: Optional details (achievements, dates, etc.)</li>
+            </ul>
+            <p>Example:</p>
+            <pre>First Name,Last Name,Achievement,Date,Location
+John,Doe,National Champion,June 2023,Colorado Springs
+Jane,Smith,Silver Medalist,June 2023,Colorado Springs</pre>
+            <p>Note: Empty rows or rows with blank name fields will be skipped.</p>
+        </div>
         </div>
         <form id="cert-form" enctype="multipart/form-data">
             <div class="form-group">
