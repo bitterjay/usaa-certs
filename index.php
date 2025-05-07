@@ -461,6 +461,19 @@ function startDrag(type) {
         if (box) {
             box.style.cursor = 'grabbing';
         }
+
+        // Log drag start
+        console.log(`Drag started: ${type}`);
+        console.log({
+            type,
+            currentSlide: currentIdx,
+            position: type === 'name' ? nameY : detailsY,
+            fontSize: type === 'name' ? nameSize : detailsSize,
+            clickY: clientY,
+            boxTop: boxRect.top,
+            boxHeight: boxRect.height,
+            dragOffset: dragOffsetY
+        });
     };
 }
 function onDrag(e) {
@@ -481,6 +494,11 @@ function onDrag(e) {
     let mm = (yPx / scale);
     mm = Math.max(0, Math.min(215.9, mm));
     
+    // Log position during drag
+    if (mm % 1 === 0) { // Only log on whole numbers to avoid console spam
+        console.log(`Dragging ${dragging}: ${mm.toFixed(1)}mm`);
+    }
+    
     if (dragging === 'name') {
         nameY = mm;
         nameYSlider.value = nameY;
@@ -494,6 +512,14 @@ function onDrag(e) {
 }
 function stopDrag() {
     if (!dragging) return;
+    
+    // Log final position before stopping
+    console.log(`Drag ended: ${dragging}`);
+    console.log({
+        type: dragging,
+        finalPosition: dragging === 'name' ? nameY : detailsY,
+        currentSlide: currentIdx
+    });
     
     // Reset cursor
     const box = certPreview.querySelector(`.bbox.${dragging}-box`);
