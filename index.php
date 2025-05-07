@@ -256,7 +256,7 @@ function getPreviewScale() {
 
 function renderCertificateHTML(record, options = {}) {
     if (!bgImg) return '';
-    const { opacity = 1, showBbox = showBoundingBoxes, bboxColor = boundingBoxColor, draggable = false, idx = null, showGreenBoxes = false } = options;
+    const { opacity = 1, showBbox = showBoundingBoxes, bboxColor = boundingBoxColor, draggable = false, idx = null, showGreenBoxes = false, isPreviewSlide = false } = options;
     
     // Calculate scaled sizes for preview
     const scaledNameSize = getScaledFontSize(nameSize);
@@ -264,9 +264,6 @@ function renderCertificateHTML(record, options = {}) {
     const scale = getPreviewScale();
     const scaledNameY = nameY * scale;
     const scaledDetailsY = detailsY * scale;
-    
-    // Determine if we should show text (visible on all slides except 0)
-    const isPreviewSlide = currentIdx === 0;
     
     // Build details HTML with pipes
     let details_html = '';
@@ -280,6 +277,7 @@ function renderCertificateHTML(record, options = {}) {
     // Main HTML with text inside bounding boxes
     return `
         <img src="${bgImg.src}" class="bg" style="position:absolute;left:0;top:0;width:100%;height:100%;z-index:0;object-fit:cover;opacity:${opacity};" />
+        ${isPreviewSlide ? `<div style="position:absolute;left:20px;top:20px;background:#aa1f2e;color:white;padding:8px 16px;border-radius:4px;font-family:'Poppins',Arial,sans-serif;font-weight:bold;z-index:3;">PREVIEW</div>` : ''}
         <div class="bbox name-box" data-type="name" style="position:absolute;left:50%;top:${scaledNameY}px;transform:translateX(-50%);z-index:2;border:2px dashed ${showBbox ? bboxColor : 'transparent'};background:${showBbox ? bboxColor+'10' : 'transparent'};padding:2px 8px;cursor:${draggable?'grab':'default'};opacity:${opacity};pointer-events:all;">
             <div class="name" style="color:${isPreviewSlide ? 'rgba(0,0,0,0)' : '#aa1f2e'};font-size:${scaledNameSize}pt;font-family:'Poppins',Arial,sans-serif;font-weight:bold;white-space:nowrap;text-align:center;background:${isPreviewSlide ? 'rgba(0,0,0,0)' : (showGreenBoxes ? 'green' : 'transparent')};border:none;padding:${showGreenBoxes ? '2px 8px' : '0'};opacity:1;pointer-events:none;">${escapeHtml(record.fullName)}</div>
         </div>
@@ -306,31 +304,37 @@ function updatePreview() {
         let maxIdx = 0;
         let maxLen = 0;
         records.forEach((rec, i) => {
-            if (rec.fullName.length > maxLen) {
-                maxLen = rec.fullName.length;
+            const fullLen = rec.fullName.length + (rec.details ? rec.details.join('').length : 0);
+            if (fullLen > maxLen) {
+                maxLen = fullLen;
                 maxIdx = i;
             }
         });
-        // Render both the invisible bounding box AND visible preview for the longest name
+        // Render preview for the longest name
         html = renderCertificateHTML(records[maxIdx], {
             opacity: 1,
             showBbox: showBoundingBoxes,
             draggable: true,
             idx: maxIdx,
-            showGreenBoxes: true
+            showGreenBoxes: true,
+            isPreviewSlide: true
         });
     } else {
-        html = renderCertificateHTML(records[currentIdx], { 
+        // Adjust index to account for preview slide
+        const actualIdx = currentIdx - 1;
+        html = renderCertificateHTML(records[actualIdx], { 
             opacity: 1, 
             showBbox: showBoundingBoxes, 
             draggable: true, 
-            idx: currentIdx 
+            idx: actualIdx,
+            isPreviewSlide: false
         });
     }
     certPreview.innerHTML = html;
-    slideIndicator.textContent = `${currentIdx+1}/${records.length}`;
+    // Update slide indicator to show total + 1 for preview
+    slideIndicator.textContent = `${currentIdx+1}/${records.length + 1}`;
     prevBtn.disabled = currentIdx === 0;
-    nextBtn.disabled = currentIdx === records.length-1;
+    nextBtn.disabled = currentIdx === records.length;
     // Add drag listeners
     addDragListeners();
 }
@@ -373,7 +377,7 @@ prevBtn.addEventListener('click', () => {
     }
 });
 nextBtn.addEventListener('click', () => {
-    if (currentIdx < records.length-1) {
+    if (currentIdx < records.length) {
         currentIdx++;
         updatePreview();
     }
