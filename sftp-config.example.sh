@@ -8,6 +8,3 @@ export SFTP_HOST="your-sftp-host"
 export SFTP_USER="your-sftp-username"
 export SFTP_PASS="your-sftp-password"
 export SFTP_PATH="/path/to/remote/directory" 
-
-# SFTP shelby@165.227.117.3
-# sftp shelby@165.227.117.3 

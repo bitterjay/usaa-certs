@@ -61,6 +61,8 @@
         #preview-area {
             margin: 32px 0 16px 0;
             text-align: center;
+            grid-column: span 2;
+            
         }
         #preview-canvas {
             background: #eee;
